@@ -1,4 +1,6 @@
-import type { AppState, Settings } from "../domain/types";
+import type { SessionMiss, SessionProgress } from "../domain/scoring";
+import type { SessionItem } from "../domain/session";
+import type { AppState, Direction, Settings } from "../domain/types";
 import type {
   LoadIssueKind,
   SaveFailureReason,
@@ -7,6 +9,38 @@ import type {
 
 export type StorageNoticeKind = LoadIssueKind | SaveFailureReason;
 
+export interface TrainingView {
+  stackId: string;
+  stackName: string;
+  configuredDirection: Direction;
+  item: SessionItem;
+  revealed: boolean;
+  answered: number;
+  total: number;
+  persistedStreak: number;
+  sessionBestRun: number;
+}
+
+export interface GradeOutcome {
+  item: SessionItem;
+  correct: boolean;
+  complete: boolean;
+  save: SaveResult;
+  progress: SessionProgress;
+  persistedStreak: number;
+}
+
+export interface SessionSummaryView {
+  stackId: string;
+  stackName: string;
+  direction: Direction;
+  answered: number;
+  correct: number;
+  missed: number;
+  bestRun: number;
+  misses: readonly SessionMiss[];
+}
+
 export interface AppContext {
   readonly state: AppState;
   readonly storageNotice: StorageNoticeKind | null;
@@ -14,6 +48,13 @@ export interface AppContext {
   updateSettings(patch: Partial<Settings>): SaveResult;
   resetStorage(): SaveResult;
   refresh(): void;
+  startSession(): void;
+  trainAgain(): void;
+  quitSession(): void;
+  revealAnswer(): boolean;
+  gradeAnswer(correct: boolean): GradeOutcome | null;
+  getTrainingView(): TrainingView | null;
+  getSummaryView(): SessionSummaryView | null;
 }
 
 export type ScreenCleanup = () => void;

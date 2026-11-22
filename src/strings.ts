@@ -1,3 +1,5 @@
+import type { Rank, Suit } from "./domain/cards";
+
 export const strings = {
   appTitle: "Open Stacks Trainer",
   repositoryUrl: "https://github.com/ricdelgado/open-stacks-trainer",
@@ -7,6 +9,7 @@ export const strings = {
   documentTitles: {
     menu: "Open Stacks Trainer",
     train: "Training — Open Stacks Trainer",
+    summary: "Session complete — Open Stacks Trainer",
     stats: "Stats — Open Stacks Trainer",
     myStacks: "My Stacks — Open Stacks Trainer",
     import: "Import stack — Open Stacks Trainer",
@@ -36,6 +39,7 @@ export const strings = {
 
   headings: {
     training: "Training",
+    summary: "Session complete",
     stats: "Stats",
     myStacks: "My Stacks",
     importStack: "Import stack",
@@ -44,10 +48,72 @@ export const strings = {
     stackView: "Stack",
   },
 
+  cards: {
+    rankNames: {
+      A: "ace",
+      "2": "two",
+      "3": "three",
+      "4": "four",
+      "5": "five",
+      "6": "six",
+      "7": "seven",
+      "8": "eight",
+      "9": "nine",
+      "10": "ten",
+      J: "jack",
+      Q: "queen",
+      K: "king",
+    } satisfies Record<Rank, string>,
+    suitNames: {
+      S: "spades",
+      H: "hearts",
+      C: "clubs",
+      D: "diamonds",
+    } satisfies Record<Suit, string>,
+    accessibleName: (rank: string, suit: string) => `${rank} of ${suit}`,
+  },
+
+  actions: {
+    answer: "Answer",
+    missed: "Missed",
+    gotIt: "Got it",
+    trainAgain: "Train again",
+    menu: "Menu",
+  },
+
   directions: {
     "position-to-card": "Position → card",
     "card-to-position": "Card → position",
     mixed: "Mixed",
+  },
+
+  training: {
+    quit: "Quit",
+    quitConfirm:
+      "Quit this session? Answers you already gave are saved. The rest of this session will be discarded.",
+    progress: (answered: number, total: number) => `${answered}/${total}`,
+    answeredProgress: (answered: number, total: number) =>
+      `Answered ${answered} of ${total}`,
+    streak: (current: number) => `Streak ${current}`,
+    positionLabel: "Position",
+    cardLabel: "Card",
+    positionAccessible: (position: number) => `Position ${position}`,
+    revealAnnouncement: (answer: string) => `Answer: ${answer}`,
+  },
+
+  summary: {
+    stackDirection: (stack: string, direction: string) =>
+      `${stack} · ${direction}`,
+    correct: "Correct",
+    missed: "Missed",
+    accuracy: "Accuracy",
+    sessionBest: "Session-best streak",
+    countOutOf: (count: number, total: number) => `${count} / ${total}`,
+    missedCards: "Missed cards",
+    noMisses: "No misses. Clean session.",
+    positionLine: (position: number) => `Position ${position}`,
+    percent: (value: number) => `${value}%`,
+    emptyValue: "—",
   },
 
   help: {
@@ -92,7 +158,6 @@ export const strings = {
   },
 
   placeholders: {
-    train: "Training is not available in this preview yet.",
     stats: "No practice yet. Train a stack to see your stats here.",
     myStacks: "Stack management is not available in this preview yet.",
     import: "Stack import is not available in this preview yet.",

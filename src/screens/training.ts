@@ -1,0 +1,208 @@
+import { cardAccessibleLabel } from "../ui/card-labels";
+import { strings } from "../strings";
+import { confirmAction } from "../ui/confirm";
+import { createCardFace } from "../ui/card-face";
+import { button, el, showStatus } from "../ui/elements";
+import { storageMessage } from "../ui/storage-messages";
+import type { Screen, TrainingView } from "./screen";
+
+function createPositionFace(position: number): HTMLElement {
+  const face = el("span", "position-face position-face--large");
+  face.setAttribute("role", "img");
+  face.setAttribute("aria-label", strings.training.positionAccessible(position));
+  face.append(el("span", "position-face__number", String(position)));
+  return face;
+}
+
+function frontIsPosition(view: TrainingView): boolean {
+  return view.item.direction === "position-to-card";
+}
+
+function answerDescription(view: TrainingView): string {
+  return frontIsPosition(view)
+    ? cardAccessibleLabel(view.item.card)
+    : strings.training.positionAccessible(view.item.position);
+}
+
+export const renderTraining: Screen = (root, context) => {
+  const initial = context.getTrainingView();
+  if (!initial) return;
+
+  root.className = "screen screen--training";
+
+  const header = el("header", "training-header");
+  const heading = el("h1", "screen-title", strings.headings.training);
+  const quit = button(strings.training.quit, "button button--secondary button--small");
+  quit.addEventListener("click", () => {
+    if (confirmAction(strings.training.quitConfirm)) {
+      context.quitSession();
+    }
+  });
+  header.append(heading, quit);
+
+  const stackName = el("p", "training-stack", initial.stackName);
+
+  const stats = el("div", "training-stats");
+  const progress = el("p", "training-progress");
+  progress.setAttribute("aria-live", "polite");
+  const streak = el("p", "training-streak");
+  const direction = el("p", "training-direction");
+  stats.append(progress, streak, direction);
+
+  const live = el("p", "sr-only");
+  live.setAttribute("aria-live", "polite");
+  live.setAttribute("aria-atomic", "true");
+
+  const play = el("section", "training-play");
+  play.tabIndex = -1;
+  const status = el("div", "form-status");
+  if (context.storageNotice) {
+    showStatus(status, storageMessage(context.storageNotice));
+  }
+
+  const renderPrompt = (focusPlay: boolean): void => {
+    const view = context.getTrainingView();
+    if (!view) return;
+
+    progress.textContent = strings.training.progress(view.answered, view.total);
+    progress.setAttribute(
+      "aria-label",
+      strings.training.answeredProgress(view.answered, view.total),
+    );
+    streak.textContent = strings.training.streak(view.persistedStreak);
+    direction.textContent = strings.directions[view.item.direction];
+    live.textContent = view.revealed
+      ? strings.training.revealAnnouncement(answerDescription(view))
+      : "";
+
+    const pair = el(
+      "div",
+      view.revealed ? "prompt-pair prompt-pair--revealed" : "prompt-pair",
+    );
+    const frontSide = el("div", "prompt-side");
+    frontSide.append(
+      el(
+        "p",
+        "prompt-side__label",
+        frontIsPosition(view)
+          ? strings.training.positionLabel
+          : strings.training.cardLabel,
+      ),
+      frontIsPosition(view)
+        ? createPositionFace(view.item.position)
+        : createCardFace(view.item.card, "large"),
+    );
+    pair.append(frontSide);
+
+    if (view.revealed) {
+      const backSide = el("div", "prompt-side prompt-side--answer");
+      backSide.append(
+        el(
+          "p",
+          "prompt-side__label",
+          frontIsPosition(view)
+            ? strings.training.cardLabel
+            : strings.training.positionLabel,
+        ),
+        frontIsPosition(view)
+          ? createCardFace(view.item.card, "large")
+          : createPositionFace(view.item.position),
+      );
+      pair.append(backSide);
+    }
+
+    const controls = el(
+      "div",
+      view.revealed ? "training-controls training-controls--grade" : "training-controls",
+    );
+    if (!view.revealed) {
+      const answer = button(
+        strings.actions.answer,
+        "button button--primary button--wide",
+      );
+      answer.dataset.action = "answer";
+      answer.addEventListener("click", reveal);
+      controls.append(answer);
+    } else {
+      const missed = button(
+        strings.actions.missed,
+        "button button--secondary button--wide",
+      );
+      missed.dataset.action = "missed";
+      missed.addEventListener("click", () => grade(false));
+
+      const gotIt = button(
+        strings.actions.gotIt,
+        "button button--primary button--wide",
+      );
+      gotIt.dataset.action = "got-it";
+      gotIt.addEventListener("click", () => grade(true));
+
+      controls.append(missed, gotIt);
+    }
+
+    play.replaceChildren(pair, controls);
+
+    if (focusPlay) {
+      play.focus({ preventScroll: true });
+    }
+  };
+
+  const reveal = (): void => {
+    if (!context.revealAnswer()) return;
+    renderPrompt(true);
+  };
+
+  const grade = (correct: boolean): void => {
+    const outcome = context.gradeAnswer(correct);
+    if (!outcome) return;
+    if (outcome.complete) return;
+
+    status.replaceChildren();
+    if (!outcome.save.ok) {
+      showStatus(status, storageMessage(outcome.save.reason));
+    }
+    renderPrompt(true);
+  };
+
+  const onKeyDown = (event: KeyboardEvent): void => {
+    if (event.defaultPrevented || event.repeat) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (
+      target?.isContentEditable ||
+      target?.closest("input, textarea, select, dialog[open]")
+    ) {
+      return;
+    }
+
+    const view = context.getTrainingView();
+    if (!view) return;
+    const key = event.key.toLowerCase();
+
+    if (!view.revealed) {
+      if (key !== " " && key !== "enter") return;
+      if (target?.closest("button, a")) return;
+      event.preventDefault();
+      reveal();
+      return;
+    }
+
+    if (key === "1" || key === "n") {
+      event.preventDefault();
+      grade(false);
+    } else if (key === "2" || key === "y") {
+      event.preventDefault();
+      grade(true);
+    }
+  };
+
+  window.addEventListener("keydown", onKeyDown);
+  root.append(header, stackName, stats, play, live, status);
+  renderPrompt(false);
+
+  return () => {
+    window.removeEventListener("keydown", onKeyDown);
+  };
+};

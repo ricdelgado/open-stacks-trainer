@@ -4,24 +4,8 @@ import { strings } from "../strings";
 import { confirmAction } from "../ui/confirm";
 import { button, el, link, showStatus } from "../ui/elements";
 import { openHelpDialog } from "../ui/help-dialog";
+import { storageMessage } from "../ui/storage-messages";
 import type { AppContext, Screen } from "./screen";
-
-function storageMessage(
-  kind: "corrupt" | "newer-schema" | "unavailable" | "quota" | "blocked",
-): string {
-  switch (kind) {
-    case "corrupt":
-      return strings.storage.corrupt;
-    case "newer-schema":
-      return strings.storage.newer;
-    case "unavailable":
-      return strings.storage.unavailable;
-    case "quota":
-      return strings.storage.quota;
-    case "blocked":
-      return strings.storage.writeBlocked;
-  }
-}
 
 function renderStorageNotice(
   container: HTMLElement,
@@ -87,11 +71,13 @@ export const renderMenu: Screen = (root, context) => {
   const startPanel = el("section", "start-panel");
   startPanel.setAttribute("aria-label", strings.menu.startTraining);
 
-  const start = link(
-    "#/train",
+  const start = button(
     strings.menu.startTraining,
     "button button--primary button--large",
   );
+  start.addEventListener("click", () => {
+    context.startSession();
+  });
   startPanel.append(start);
 
   const formStatus = el("div", "form-status");
