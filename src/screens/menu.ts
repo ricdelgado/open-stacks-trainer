@@ -1,44 +1,11 @@
 import { builtInStacks } from "../data/stacks";
 import { DIRECTIONS, type Settings } from "../domain/types";
 import { strings } from "../strings";
-import { confirmAction } from "../ui/confirm";
 import { button, el, link, showStatus } from "../ui/elements";
 import { openHelpDialog } from "../ui/help-dialog";
+import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import { storageMessage } from "../ui/storage-messages";
-import type { AppContext, Screen } from "./screen";
-
-function renderStorageNotice(
-  container: HTMLElement,
-  context: AppContext,
-): void {
-  if (!context.storageNotice) return;
-
-  const notice = el("div", "notice notice--error");
-  const message = el(
-    "p",
-    "notice__text",
-    storageMessage(context.storageNotice),
-  );
-  message.setAttribute("role", "alert");
-  notice.append(message);
-
-  if (context.storageNotice === "corrupt") {
-    const reset = el("button", "button button--secondary", strings.storage.resetSavedData);
-    reset.type = "button";
-    reset.addEventListener("click", () => {
-      if (!confirmAction(strings.storage.resetConfirm)) return;
-      const result = context.resetStorage();
-      if (result.ok) {
-        context.refresh();
-        return;
-      }
-      message.textContent = storageMessage(result.reason);
-    });
-    notice.append(reset);
-  }
-
-  container.append(notice);
-}
+import type { Screen } from "./screen";
 
 export const renderMenu: Screen = (root, context) => {
   root.className = "screen screen--menu";
@@ -67,6 +34,7 @@ export const renderMenu: Screen = (root, context) => {
   root.append(header);
 
   renderStorageNotice(root, context);
+  renderFlash(root, context);
 
   const startPanel = el("section", "start-panel");
   startPanel.setAttribute("aria-label", strings.menu.startTraining);
@@ -91,6 +59,16 @@ export const renderMenu: Screen = (root, context) => {
   select.name = "stack";
 
   for (const stack of builtInStacks) {
+    const option = el(
+      "option",
+      undefined,
+      strings.menu.stackCreator(stack.name, stack.creator),
+    );
+    option.value = stack.id;
+    select.append(option);
+  }
+
+  for (const stack of context.state.customStacks) {
     const option = el(
       "option",
       undefined,
@@ -140,12 +118,14 @@ export const renderMenu: Screen = (root, context) => {
   root.append(startPanel);
 
   select.addEventListener("change", () => {
-    const stack = builtInStacks.find((item) => item.id === select.value);
-    if (!stack) {
+    const known =
+      builtInStacks.some((item) => item.id === select.value) ||
+      context.state.customStacks.some((item) => item.id === select.value);
+    if (!known) {
       select.value = context.state.settings.selectedStackId;
       return;
     }
-    applySettings({ selectedStackId: stack.id });
+    applySettings({ selectedStackId: select.value });
   });
 
   const modeGroup = el("fieldset", "field mode-group");

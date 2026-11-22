@@ -116,6 +116,56 @@ export const strings = {
     emptyValue: "—",
   },
 
+  statsPage: {
+    lead: "Only the stacks you have trained appear here, most recent first.",
+    dataActions: "Backup and reset",
+    empty: "No practice yet. Train a stack to see your stats here.",
+    currentStreak: "Current streak",
+    bestStreak: "Best streak",
+    accuracy: "Accuracy",
+    totalAnswered: "Total answered",
+    practiceDays: "Practice days",
+    noPracticeDays: "No practice days yet.",
+    dayCounts: (answered: number, correct: number) =>
+      `${answered} answered, ${correct} correct`,
+    recentMisses: "Recent misses",
+    noMisses: "No misses recorded.",
+    missMeta: (position: number, at: string) => `Position ${position} · ${at}`,
+    deleteTrainingData: "Delete training data",
+    deleteStackConfirm: (name: string) =>
+      `Delete training data for "${name}"? Its streaks, practice days, and recent misses will be removed. The stack itself stays.`,
+    deleted: (name: string) => `Training data for "${name}" deleted.`,
+  },
+
+  backup: {
+    exportMyData: "Export my data",
+    restoreFromFile: "Restore from file",
+    deleteAllData: "Delete all data",
+    exported: "Backup file downloaded.",
+    restored: "Backup restored.",
+    restoreConfirm:
+      "This replaces all your current stats and custom stacks. Export your current data first if you are unsure.",
+    deleteAllConfirmOne:
+      "Delete all data? This removes all stats, custom stacks, and settings. This cannot be undone.",
+    deleteAllConfirmTwo:
+      "Are you sure? This cannot be undone. Export a backup first if you want to keep your data.",
+    deleteAllDone: "All data deleted.",
+    errors: {
+      notJson: "That file is not valid JSON. Nothing was changed.",
+      notBackup:
+        "That file is not an Open Stacks Trainer backup. Nothing was changed.",
+      newerFormat:
+        "That backup was made by a newer version of the app. Nothing was changed.",
+      newerSchema:
+        "That backup uses a newer data format. Nothing was changed.",
+      invalid: "That backup is incomplete or damaged. Nothing was changed.",
+      duplicateName: (name: string) =>
+        `That backup has a duplicate stack name: "${name}". Nothing was changed.`,
+      reservedName: (name: string) =>
+        `That backup uses a reserved stack name: "${name}". Nothing was changed.`,
+    },
+  },
+
   help: {
     title: "How to use this app",
     close: "Close",

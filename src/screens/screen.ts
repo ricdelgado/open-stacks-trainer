@@ -9,6 +9,11 @@ import type {
 
 export type StorageNoticeKind = LoadIssueKind | SaveFailureReason;
 
+export interface FlashMessage {
+  tone: "success" | "info" | "error";
+  message: string;
+}
+
 export interface TrainingView {
   stackId: string;
   stackName: string;
@@ -44,9 +49,14 @@ export interface SessionSummaryView {
 export interface AppContext {
   readonly state: AppState;
   readonly storageNotice: StorageNoticeKind | null;
+  readonly flash: FlashMessage | null;
   updateState(next: AppState): SaveResult;
   updateSettings(patch: Partial<Settings>): SaveResult;
   resetStorage(): SaveResult;
+  restoreState(next: AppState): SaveResult;
+  deleteStackStats(stackId: string): SaveResult;
+  deleteAllData(): SaveResult;
+  setFlash(message: FlashMessage): void;
   refresh(): void;
   startSession(): void;
   trainAgain(): void;

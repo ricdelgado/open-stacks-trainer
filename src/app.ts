@@ -6,7 +6,13 @@ import type { AppState, Direction } from "./domain/types";
 import { parseRoute, type Route } from "./router";
 import { renderMenu } from "./screens/menu";
 import { placeholderScreen } from "./screens/placeholder";
-import type { AppContext, GradeOutcome, Screen } from "./screens/screen";
+import type {
+  AppContext,
+  FlashMessage,
+  GradeOutcome,
+  Screen,
+} from "./screens/screen";
+import { renderStats } from "./screens/stats";
 import { renderSummary } from "./screens/summary";
 import { renderTraining } from "./screens/training";
 import { SessionRunner } from "./session/runner";
@@ -54,13 +60,7 @@ function definitionFor(route: Route): ScreenDefinition {
     case "train":
       return { screen: renderTraining, title: titleFor(route) };
     case "stats":
-      return {
-        screen: placeholderScreen(
-          strings.headings.stats,
-          strings.placeholders.stats,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderStats, title: titleFor(route) };
     case "my-stacks":
       return {
         screen: placeholderScreen(
@@ -107,8 +107,11 @@ function definitionFor(route: Route): ScreenDefinition {
 }
 
 function selectedStackExists(state: AppState): boolean {
-  return builtInStacks.some(
-    (stack) => stack.id === state.settings.selectedStackId,
+  return (
+    builtInStacks.some((stack) => stack.id === state.settings.selectedStackId) ||
+    state.customStacks.some(
+      (stack) => stack.id === state.settings.selectedStackId,
+    )
   );
 }
 
@@ -172,6 +175,7 @@ export function startApp(appRoot: HTMLElement): void {
   const normalized = normalizeSelection(loaded.state);
   let state = normalized.state;
   let saveFailure: SaveFailureReason | null = null;
+  let flash: FlashMessage | null = null;
   let activeSession: SessionRunner | null = null;
   let completedSession: {
     generated: GeneratedSession;
@@ -267,11 +271,15 @@ export function startApp(appRoot: HTMLElement): void {
     main.replaceChildren();
     main.className = "screen";
 
+    const flashForRender = flash;
+    flash = null;
+
     const context: AppContext = {
       get state() {
         return state;
       },
       storageNotice: store.getIssue()?.kind ?? saveFailure,
+      flash: flashForRender,
       updateState(next) {
         return persistState(next);
       },
@@ -285,6 +293,33 @@ export function startApp(appRoot: HTMLElement): void {
           saveFailure = null;
         }
         return result;
+      },
+      restoreState(next) {
+        const normalized = normalizeSelection(next);
+        state = normalized.state;
+        activeSession = null;
+        completedSession = null;
+        const result = store.save(state);
+        saveFailure = result.ok ? null : result.reason;
+        return result;
+      },
+      deleteStackStats(stackId) {
+        const stats = { ...state.stats };
+        delete stats[stackId];
+        return persistState({ ...state, stats });
+      },
+      deleteAllData() {
+        const result = store.reset();
+        if (!result.ok) return result;
+        state = createDefaultState();
+        saveFailure = null;
+        activeSession = null;
+        completedSession = null;
+        go("#/");
+        return result;
+      },
+      setFlash(message) {
+        flash = message;
       },
       refresh() {
         render(false);
