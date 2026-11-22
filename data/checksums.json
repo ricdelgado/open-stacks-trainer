@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "algorithm": "sha256",
+  "input": "order.join(' ')",
+  "stacks": {
+    "mnemonica": "4401cd81472fed7cad00858b3929c443ad3afe899e00f8ffed35703b004354d3",
+    "aronson": "3e5422c7d1880019afdc477c0027b737ce3c029ae1aa14bdbf92e61a34f04093",
+    "memorandum": "a0c7d1d20b4e6798e782f3d0edcef986e9440f04dacecc2f766d1d8bded7a000"
+  }
+}
