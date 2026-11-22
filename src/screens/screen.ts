@@ -1,6 +1,11 @@
 import type { SessionMiss, SessionProgress } from "../domain/scoring";
 import type { SessionItem } from "../domain/session";
-import type { AppState, Direction, Settings } from "../domain/types";
+import type {
+  AppState,
+  CustomStack,
+  Direction,
+  Settings,
+} from "../domain/types";
 import type {
   LoadIssueKind,
   SaveFailureReason,
@@ -54,6 +59,8 @@ export interface AppContext {
   updateSettings(patch: Partial<Settings>): SaveResult;
   resetStorage(): SaveResult;
   restoreState(next: AppState): SaveResult;
+  upsertCustomStack(stack: CustomStack): SaveResult;
+  deleteCustomStack(stackId: string): SaveResult;
   deleteStackStats(stackId: string): SaveResult;
   deleteAllData(): SaveResult;
   setFlash(message: FlashMessage): void;

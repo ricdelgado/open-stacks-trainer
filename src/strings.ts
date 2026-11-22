@@ -166,6 +166,104 @@ export const strings = {
     },
   },
 
+  stackNameErrors: {
+    empty: "Enter a stack name.",
+    tooLong: "Stack names can be up to 60 characters.",
+    reserved: "That name is reserved for a built-in stack.",
+    duplicate: "That stack name is already used.",
+  },
+
+  myStacksPage: {
+    lead: "Built-in stacks are read-only. Create or import your own stack to train a personal order.",
+    builtIn: "Built-in stacks",
+    custom: "My stacks",
+    emptyCustom: "You have not created any custom stacks yet.",
+    view: "View",
+    edit: "Edit",
+    export: "Export",
+    delete: "Delete",
+    create: "Create stack",
+    import: "Import stack",
+    creatorLine: (creator: string) => `Creator: ${creator}`,
+    deleteConfirm: (name: string) =>
+      `Delete "${name}"? This also deletes its training stats. This cannot be undone.`,
+    deleted: (name: string) => `"${name}" deleted.`,
+    exported: "Stack file downloaded.",
+  },
+
+  stackViewPage: {
+    creatorLine: (creator: string) => `Creator: ${creator}`,
+    readOnly: "Built-in stack — read only.",
+    export: "Export",
+    back: "Back to My Stacks",
+    exported: "Stack file downloaded.",
+  },
+
+  importPage: {
+    lead: "Paste 52 cards in notation, a stack export JSON, or a JSON array of 52 card codes.",
+    chooseFile: "Choose file",
+    fileHint: "Choose a JSON or text file, or paste it below.",
+    fileLoaded: "File loaded. Review it, then choose Import stack.",
+    fileError: "That file could not be read. Nothing was saved.",
+    nameLabel: "Stack name",
+    namePlaceholder: "My Stack",
+    inputLabel: "Cards or stack JSON",
+    inputPlaceholder: "AS 2H 3C ...",
+    inputHint:
+      "Examples: AS 10♥ KD 7S, or TS,9H,QC. Ranks A–K and suits S/H/C/D or ♠/♥/♣/♦. 10 and T are both accepted.",
+    submit: "Import stack",
+    imported: "Stack imported.",
+    errors: {
+      empty: "Paste 52 cards or a stack JSON first. Nothing was saved.",
+      malformedJson:
+        "That JSON is malformed. Nothing was saved.",
+      backupJson:
+        "That is a full backup. Use Restore from file on the Stats page instead.",
+      notStackJson:
+        "That JSON is not a stack export or a list of 52 cards. Nothing was saved.",
+      card: (token: string) =>
+        `Unknown card: "${token}". Nothing was saved.`,
+      count: (count: number) =>
+        `Found ${count} cards. A stack needs exactly 52. Nothing was saved.`,
+      duplicate: (card: string) =>
+        `Duplicate card: ${card}. Nothing was saved.`,
+    },
+  },
+
+  editor: {
+    nameLabel: "Stack name",
+    namePlaceholder: "My Stack",
+    cardPool: "Cards",
+    positions: "Positions",
+    positionNote:
+      "Position 1 is the top of the face-down deck; position 52 is the bottom.",
+    suitTab: (glyph: string, name: string, remaining: number) =>
+      `${glyph} ${name} (${remaining} left)`,
+    suitHeading: (glyph: string, name: string, remaining: number) =>
+      `${glyph} ${name} — ${remaining} left`,
+    selectPrompt: "Tap a card to select it, then tap a position.",
+    selected: (card: string) => `${card} selected — tap a position`,
+    clearSelection: "Clear selection",
+    cardAvailable: (card: string) => `${card}, available`,
+    cardPlaced: (card: string, position: number) =>
+      `${card}, placed at position ${position}`,
+    positionEmpty: (position: number) => `Position ${position}, empty`,
+    positionFilled: (position: number, card: string) =>
+      `Position ${position}, ${card}`,
+    assigned: (assigned: number) => `${assigned}/52 assigned`,
+    incomplete: "Assign all 52 positions before saving.",
+    saveHintName: "Enter a stack name to save.",
+    saveHintCards: (remaining: number) =>
+      `Assign ${remaining} more ${remaining === 1 ? "card" : "cards"} to save.`,
+    saveHintReady: "Ready to save.",
+    save: "Save",
+    cancel: "Cancel",
+    unsavedConfirm:
+      "Discard your changes to this stack? Unsaved work will be lost.",
+    saved: "Stack saved.",
+    creatorLine: (creator: string) => `Creator: ${creator}`,
+  },
+
   help: {
     title: "How to use this app",
     close: "Close",
@@ -205,15 +303,7 @@ export const strings = {
 
   common: {
     backToMenu: "Back to menu",
-  },
-
-  placeholders: {
-    stats: "No practice yet. Train a stack to see your stats here.",
-    myStacks: "Stack management is not available in this preview yet.",
-    import: "Stack import is not available in this preview yet.",
-    newStack: "The stack editor is not available in this preview yet.",
-    editStack: "The stack editor is not available in this preview yet.",
-    viewStack: "The stack view is not available in this preview yet.",
+    backToMyStacks: "Back to My Stacks",
   },
 
   storage: {

@@ -4,14 +4,17 @@ import { generateSession, type GeneratedSession } from "./domain/session";
 import { withSettings } from "./domain/settings";
 import type { AppState, Direction } from "./domain/types";
 import { parseRoute, type Route } from "./router";
+import { renderEditor } from "./screens/editor";
+import { renderImport } from "./screens/import";
 import { renderMenu } from "./screens/menu";
-import { placeholderScreen } from "./screens/placeholder";
+import { renderMyStacks } from "./screens/my-stacks";
 import type {
   AppContext,
   FlashMessage,
   GradeOutcome,
   Screen,
 } from "./screens/screen";
+import { renderStackView } from "./screens/stack-view";
 import { renderStats } from "./screens/stats";
 import { renderSummary } from "./screens/summary";
 import { renderTraining } from "./screens/training";
@@ -62,45 +65,15 @@ function definitionFor(route: Route): ScreenDefinition {
     case "stats":
       return { screen: renderStats, title: titleFor(route) };
     case "my-stacks":
-      return {
-        screen: placeholderScreen(
-          strings.headings.myStacks,
-          strings.placeholders.myStacks,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderMyStacks, title: titleFor(route) };
     case "import":
-      return {
-        screen: placeholderScreen(
-          strings.headings.importStack,
-          strings.placeholders.import,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderImport, title: titleFor(route) };
     case "stack-new":
-      return {
-        screen: placeholderScreen(
-          strings.headings.newStack,
-          strings.placeholders.newStack,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderEditor(null), title: titleFor(route) };
     case "stack-edit":
-      return {
-        screen: placeholderScreen(
-          strings.headings.editStack,
-          strings.placeholders.editStack,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderEditor(route.id), title: titleFor(route) };
     case "stack-view":
-      return {
-        screen: placeholderScreen(
-          strings.headings.stackView,
-          strings.placeholders.viewStack,
-        ),
-        title: titleFor(route),
-      };
+      return { screen: renderStackView(route.id), title: titleFor(route) };
     case "summary":
       return { screen: renderSummary, title: titleFor(route) };
   }
@@ -258,10 +231,22 @@ export function startApp(appRoot: HTMLElement): void {
     }
 
     let route = normalizeHash(parseRoute(window.location.hash));
-    if (
+    const stackRouteId =
+      route.name === "stack-view" || route.name === "stack-edit"
+        ? route.id
+        : null;
+    const missingScreen =
       (route.name === "train" && !activeSession) ||
-      (route.name === "summary" && !completedSession)
-    ) {
+      (route.name === "summary" && !completedSession) ||
+      (route.name === "stack-view" &&
+        stackRouteId !== null &&
+        !getBuiltInStack(stackRouteId) &&
+        !state.customStacks.some((stack) => stack.id === stackRouteId)) ||
+      (route.name === "stack-edit" &&
+        stackRouteId !== null &&
+        !state.customStacks.some((stack) => stack.id === stackRouteId));
+
+    if (missingScreen) {
       window.history.replaceState(null, "", "#/");
       route = { name: "menu" };
     }
@@ -307,6 +292,32 @@ export function startApp(appRoot: HTMLElement): void {
         const stats = { ...state.stats };
         delete stats[stackId];
         return persistState({ ...state, stats });
+      },
+      upsertCustomStack(stack) {
+        const exists = state.customStacks.some((item) => item.id === stack.id);
+        const customStacks = exists
+          ? state.customStacks.map((item) =>
+              item.id === stack.id ? stack : item,
+            )
+          : [...state.customStacks, stack];
+        return persistState({ ...state, customStacks });
+      },
+      deleteCustomStack(stackId) {
+        const customStacks = state.customStacks.filter(
+          (stack) => stack.id !== stackId,
+        );
+        const stats = { ...state.stats };
+        delete stats[stackId];
+        const selectedStackId =
+          state.settings.selectedStackId === stackId
+            ? DEFAULT_STACK_ID
+            : state.settings.selectedStackId;
+        return persistState({
+          ...state,
+          customStacks,
+          stats,
+          settings: { ...state.settings, selectedStackId },
+        });
       },
       deleteAllData() {
         const result = store.reset();

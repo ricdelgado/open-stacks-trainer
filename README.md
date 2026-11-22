@@ -36,8 +36,6 @@ Position 1 is the **top** of the face-down deck; position 52 is the bottom.
 
 Only the published card orders are used. No book text, routines, or diagrams are reproduced. The orders are verified against multiple published sources and protected by checksums; see [`data/SOURCES.md`](data/SOURCES.md).
 
-**Mi Baraja Personal** (Dani DaOrtiz) is a paid product and is **not** bundled. If you own it, add it locally through the custom-stack editor or paste-import; it stays in your browser and is never committed.
-
 Si Stebbins is not included in v1 because it is cyclic and needs a different training model.
 
 ## Development
