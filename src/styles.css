@@ -26,6 +26,15 @@
   box-sizing: border-box;
 }
 
+.app,
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
 html {
   background: var(--bg);
   color: var(--ink);
