@@ -119,7 +119,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **My Stacks** — the stack management screen: built-ins (view only) and customs (view, edit, export, delete), plus Create stack and Import stack.
 
-**Editor** — the custom-stack grid: name, suit tabs, card pool, adaptive position grid, pinned selection bar, save. Used cards are greyed out. See the PRD for the exact interaction rules.
+**Editor** — the custom-stack grid: name, suit tabs, card pool, adaptive position grid, pinned selection bar, save. Used cards are greyed out. See `docs/history/PRD-v1.md` for the v1 interaction rules.
 
 **Import** — paste 52 cards in notation or a stack export JSON, validate, name, save as a custom stack.
 

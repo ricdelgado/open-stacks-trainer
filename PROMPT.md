@@ -20,14 +20,14 @@ v1 is a static, browser-only trainer for memorized card stacks:
 
 Deliverables:
 
-1. A working Vite + vanilla TypeScript + Vitest app implementing `PRD.md`.
+1. A working Vite + vanilla TypeScript + Vitest app implementing `docs/history/PRD-v1.md`.
 2. Unit tests for data integrity, parsing, storage, session generation, scoring/streaks, custom-stack validation, and backup/restore.
 3. A menu, training screen, summary, stats page, My Stacks, stack view, import, and editor.
 4. A README with creator credits and the mandatory AI disclosure; an MIT `LICENSE`; the deploy workflow.
 5. A live GitHub Pages URL: `https://ricdelgado.github.io/open-stacks-trainer/`.
 6. A final report listing what was built, what was tested, and any limitations.
 
-Do **not** redesign the product. Do **not** build future modes. Do **not** invent behaviour that is not in `PRD.md`.
+Do **not** redesign the product. Do **not** build future modes. Do **not** invent behaviour that is not in `docs/history/PRD-v1.md`.
 
 ---
 
@@ -35,7 +35,7 @@ Do **not** redesign the product. Do **not** build future modes. Do **not** inven
 
 ## Read these first, in this order
 
-1. `PRD.md` — the product spec, data contracts, milestones, and acceptance criteria. **This wins over everything else.**
+1. `docs/history/PRD-v1.md` — the product spec, data contracts, milestones, and acceptance criteria. **This wins over everything else.**
 2. `CONTEXT.md` — the glossary and naming rules. Use its vocabulary in code, tests, and UI labels.
 3. `AGENTS.md` — the operating manual and non-negotiables.
 4. `data/SOURCES.md` — stack provenance and verification.
@@ -84,7 +84,7 @@ A magician picks a stack and a direction, then gets one shuffled pass of 52 prom
 1. **Vite + vanilla TypeScript + Vitest.** No React, Svelte, Vue, or other UI framework. No CSS framework.
 2. **Plain DOM APIs.** Small render functions per screen. Each screen cleans up its listeners when leaving.
 3. **Strict TypeScript.** Avoid `any`. Use discriminated unions for direction, routes, and validation results. Enable `strict`, `noUncheckedIndexedAccess` where practical.
-4. **Hash routing only.** GitHub Pages has no SPA rewrite. Routes are in `PRD.md` §7.12. Unknown hash → menu.
+4. **Hash routing only.** GitHub Pages has no SPA rewrite. Routes are in `docs/history/PRD-v1.md` §7.12. Unknown hash → menu.
 5. **Vite base `/open-stacks-trainer/`.** The app is a project site, not a root site.
 6. **One `localStorage` key:** `open-stacks-trainer`; one versioned JSON payload. No cookies, IndexedDB, or server storage.
 7. **All user-visible strings in one module.** English v1. No user-visible literal in a screen.
@@ -206,7 +206,7 @@ After the human approves Gate 0, commit the setup pack (docs, data, verifier, wo
 1. Scaffold Vite + vanilla TypeScript. The folder is not empty, so either:
    - create the scaffold in a temporary folder and copy in `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, and the minimal `src/` entry files; or
    - run `npm create vite@latest . -- --template vanilla-ts` and choose the option to ignore existing files if prompted.
-   Do **not** overwrite `PRD.md`, `CONTEXT.md`, `AGENTS.md`, `README.md`, `LICENSE`, `PROMPT.md`, `data/`, `docs/`, `scripts/`, `tests/`, `.github/`, `.scratch/`, or `.gitignore`.
+   Do **not** overwrite `docs/history/PRD-v1.md`, `CONTEXT.md`, `AGENTS.md`, `README.md`, `LICENSE`, `PROMPT.md`, `data/`, `docs/`, `scripts/`, `tests/`, `.github/`, `.scratch/`, or `.gitignore`.
 2. Install Vite, TypeScript, and Vitest. Add scripts:
    ```json
    {
@@ -222,7 +222,7 @@ After the human approves Gate 0, commit the setup pack (docs, data, verifier, wo
 3. Set `base: "/open-stacks-trainer/"` in the Vite config. Set `build.outDir` to `dist` (default). Add `resolveJsonModule`/strict TypeScript settings. Add an `engines` field for Node 20.19+ or 22.12+.
 4. Import `data/stacks.json` through a typed data module. Do not duplicate the order. Built-in IDs, names, and creators must match the file.
 5. Add the **built-in data integrity test**: IDs, 52-card length, valid cards, no duplicates, full-deck coverage, landmarks, checksums. A ready-made test is at `tests/stacks.test.ts`; keep it, adapt its imports if needed, and make it run under Vitest.
-6. Build the hash router and app shell. Implement routes from `PRD.md` §7.12. Unknown → menu. Update `document.title` and focus the main heading on route change.
+6. Build the hash router and app shell. Implement routes from `docs/history/PRD-v1.md` §7.12. Unknown → menu. Update `document.title` and focus the main heading on route change.
 7. Add the centralized strings module. Every visible label comes from it.
 8. Add base styles: mobile-first, light theme, system font, card face, buttons, focus styles, layout.
 9. Build the **menu / navigation skeleton**:
@@ -394,7 +394,7 @@ Then stop, wait for approval, and commit M3.
    - plain-language errors; nothing saved on failure;
    - backup JSON gets the “use Restore on Stats” message;
    - success navigates to My Stacks with a success message.
-4. Implement the **grid editor** exactly as `PRD.md` §7.7 and ADR-0005:
+4. Implement the **grid editor** exactly as `docs/history/PRD-v1.md` §7.7 and ADR-0005:
    - name, suit tabs, remaining counts, used cards greyed with their position;
    - desktop expands to four suit rows;
    - adaptive position grid (6 → 13 columns, cells ≥48 px, no horizontal scroll);
@@ -404,7 +404,7 @@ Then stop, wait for approval, and commit M3.
    - edit pre-fills; rename keeps ID/stats; cancel with unsaved changes confirms.
 5. Implement **per-stack export** JSON with the correct format and filename.
 6. Verify and update as needed: **README**, **LICENSE**, credits, AI disclosure, and the deploy workflow:
-   - README **Built with AI** section near the top, with the exact wording in `PRD.md` §15;
+   - README **Built with AI** section near the top, with the exact wording in `docs/history/PRD-v1.md` §15;
    - stack credits for Tamariz, Aronson, Aragón;
    - MIT license;
    - main-menu footer AI disclosure linking to the repo;

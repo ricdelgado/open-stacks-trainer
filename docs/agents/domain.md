@@ -5,7 +5,7 @@ How the engineering skills should consume this repo’s domain documentation whe
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root — the project glossary and naming rules.
-- **`PRD.md`** at the repo root — the v1 product spec and data contracts.
+- **`docs/history/PRD-v1.md`** — the historical v1 product spec and data contracts.
 - **`docs/adr/`** — read ADRs that touch the area you are about to work in.
 - **`data/SOURCES.md`** — before touching stack data or tests that assert it.
 
@@ -18,10 +18,11 @@ Single-context repo (this one):
 ```
 /
 ├── CONTEXT.md
-├── PRD.md
-├── docs/adr/
-│   ├── 0001-....md
-│   └── 0002-....md
+├── docs/
+│   ├── adr/
+│   │   ├── 0001-....md
+│   │   └── 0002-....md
+│   └── history/PRD-v1.md
 └── src/
 ```
 
@@ -43,6 +44,6 @@ If your output contradicts an existing ADR, surface it explicitly rather than si
 
 ## Data and product docs are part of the domain
 
-- `PRD.md` is the v1 product spec; v2 feature specs live under `.scratch/<feature>/spec.md`.
+- `docs/history/PRD-v1.md` is the historical v1 spec; current feature specs live under `.scratch/<feature>/spec.md`.
 - `data/stacks.json` is the verified built-in data. Never regenerate or “correct” it.
 - `data/SOURCES.md` records provenance. A change to built-in data is a reviewed change, not a test fix.

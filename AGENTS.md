@@ -1,12 +1,12 @@
 # AGENTS.md — operating manual for Open Stacks Trainer
 
-This file is for the coding agent. It is not the product spec. Read `PRD.md` for behaviour, `CONTEXT.md` for vocabulary, `data/SOURCES.md` for stack provenance, and `docs/adr/` for the decisions behind the architecture.
+This file is for the coding agent. It is not the product spec. Read the relevant `.scratch/<feature>/spec.md` for behaviour, `CONTEXT.md` for vocabulary, `data/SOURCES.md` for stack provenance, and `docs/adr/` for the decisions behind the architecture. The historical v1 spec is `docs/history/PRD-v1.md`.
 
 ## What this repo is
 
 Open Stacks Trainer is a free, static, browser-only trainer for memorized card stacks. v1 trains Mnemonica, Aronson, Memorandum, and user-made custom stacks by asking card ↔ position pairs in one shuffled pass of 52, self-graded after reveal. Progress lives in `localStorage`. There is no backend, no account, no analytics, and no network traffic after the assets load.
 
-`PRD.md` is the v1 product spec; v2 feature specs live under `.scratch/<feature>/spec.md`.
+Current feature specs live under `.scratch/<feature>/spec.md`; `docs/history/PRD-v1.md` is the historical v1 spec.
 
 ## Non-negotiables
 
@@ -29,7 +29,7 @@ Open Stacks Trainer is a free, static, browser-only trainer for memorized card s
 
 ### Issue tracker
 
-Local markdown under `.scratch/<feature-slug>/`. The v1 spec is the root `PRD.md`. See `docs/agents/issue-tracker.md`.
+Local markdown under `.scratch/<feature-slug>/`. The historical v1 spec is `docs/history/PRD-v1.md`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
@@ -37,25 +37,25 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` at the repo root, product spec in `PRD.md`, ADRs in `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` at the repo root, current feature specs in `.scratch/`, v1 history in `docs/history/PRD-v1.md`, ADRs in `docs/adr/`. See `docs/agents/domain.md`.
 
 > The Matt Pocock setup is already complete. Do **not** rerun `setup-matt-pocock-skills` unless the human explicitly asks to switch issue trackers or restart the configuration.
 
 ## How to work
 
-1. **Read first.** `PRD.md`, `CONTEXT.md`, `data/SOURCES.md`, the relevant ADRs, and this file.
-2. **Plan the milestone.** Restate the scope and the manual checks you will hand the human at the gate. Keep the PRD vocabulary.
+1. **Read first.** The relevant `.scratch/<feature>/spec.md`, `CONTEXT.md`, `data/SOURCES.md`, the relevant ADRs, and this file. Consult `docs/history/PRD-v1.md` when the feature touches v1 behaviour.
+2. **Plan the milestone.** Restate the scope and the manual checks you will hand the human at the gate. Keep the `CONTEXT.md` vocabulary.
 3. **Use the engineering skills when available.** If the human invokes `/implement`, follow it. Use `/tdd` at the pre-agreed seams (domain logic, parser, storage, scoring). Use `/code-review` before each gate.
 4. **Work in milestone order:** Setup → M1 → M2 → M3 → M4 → Final. Do not start a later milestone before the previous gate is approved.
 5. **Run checks continuously.** Typecheck and the relevant test file after each change; the full suite, build, and data verifier before asking for approval.
 6. **Keep changes small.** One coherent slice per commit. Do not refactor unrelated code.
 7. **Ask before adding a dependency.** The expected set is Vite, TypeScript, Vitest, and their types. Justify anything else.
-8. **If something is ambiguous, stop and ask.** Do not invent product behaviour. The PRD is detailed; use it.
+8. **If something is ambiguous, stop and ask.** Do not invent product behaviour. The specs are detailed; use them.
 9. **Do not push to GitHub until the M4 gate.** Commit locally after each approved milestone. The first push is the reviewed build.
 
 ## Milestones and gates
 
-The exact checks are in `PRD.md` §11. In short:
+The v1 milestone checks are in `docs/history/PRD-v1.md` §11; v2 tickets carry their own checklists. In short:
 
 - **Setup:** verify Node/npm/git, confirm the GitHub repo and `origin` remote, run `node scripts/verify-stacks.mjs`. The Matt Pocock config is done.
 - **M1:** Vite + TS + Vitest scaffold; scripts; base path; verified data import; data test; hash router; strings; base styles; menu/navigation skeleton. No training logic. Gate: dev server, menu clicks, typecheck/tests/build.
@@ -110,7 +110,6 @@ The agent may adjust names, but keep these seams:
 ├── vite.config.ts
 ├── AGENTS.md
 ├── CONTEXT.md
-├── PRD.md
 ├── README.md
 ├── LICENSE
 ├── data/
@@ -121,7 +120,8 @@ The agent may adjust names, but keep these seams:
 │   └── verify-stacks.mjs
 ├── docs/
 │   ├── agents/
-│   └── adr/
+│   ├── adr/
+│   └── history/PRD-v1.md   # historical v1 spec
 ├── .scratch/                # local-markdown issues/specs
 ├── .github/workflows/deploy.yml
 ├── src/
@@ -226,7 +226,7 @@ A milestone is done only when:
 - typecheck, tests, build, and the data verifier pass;
 - the mobile layout has been checked where relevant;
 - no console errors appear during the manual checks;
-- the PRD behaviour, vocabulary, and labels are followed;
+- the relevant spec behaviour, vocabulary, and labels are followed;
 - the human has approved the gate.
 
 The project is done only when the live GitHub Pages URL works, the README contains credits and the AI disclosure, the MIT license is present, and export → delete-all → restore round-trips correctly.

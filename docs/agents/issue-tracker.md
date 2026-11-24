@@ -2,7 +2,7 @@
 
 Issues and specs (you may know a spec as a PRD) for this repo live as markdown files in `.scratch/`.
 
-The current v1 product spec is the root-level `PRD.md`. It is the exception to the per-feature rule below because it was produced during the design phase before the issue tracker existed. Future feature specs belong under `.scratch/`.
+The historical v1 product spec is `docs/history/PRD-v1.md`. It predates the issue tracker, so it is the exception to the per-feature rule below. Current and future feature specs belong under `.scratch/`.
 
 ## Conventions
 
@@ -14,7 +14,7 @@ The current v1 product spec is the root-level `PRD.md`. It is the exception to t
 
 ## When a skill says “publish to the issue tracker”
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed). For the current v1 work, update `PRD.md` only if the spec itself changes; otherwise create tickets under `.scratch/v1-basic-trainer/issues/`.
+Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed). Do not edit the historical v1 spec for new work; add a new feature directory and tickets instead.
 
 ## When a skill says “fetch the relevant ticket”
 

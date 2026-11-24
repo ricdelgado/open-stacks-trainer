@@ -1,6 +1,8 @@
-# Open Stacks Trainer — Product Requirements (v1)
+# Open Stacks Trainer — v1 Product Requirements (historical)
 
-**Status:** implementation-ready  
+> **Historical document — v1 only.** Current feature specs live in `.scratch/<feature>/spec.md`. `CONTEXT.md` is the living glossary and `AGENTS.md` is the operating manual. Keep this file for v1 behaviour, data-contract, and milestone history.
+
+**Status:** historical v1 spec
 **Owner:** ricdelgado  
 **Source of truth:** this document for the v1 behavior it describes.
 **Target:** static web app, free hosting on GitHub Pages, built by an AI agent under human review.

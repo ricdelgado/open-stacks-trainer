@@ -2,7 +2,7 @@
 
 This directory is the repo's local-markdown issue tracker, configured by `docs/agents/issue-tracker.md`.
 
-- The v1 product spec is the root-level `PRD.md`.
+- The historical v1 product spec is `docs/history/PRD-v1.md`.
 - Future feature specs go in `.scratch/<feature-slug>/spec.md`.
 - Tickets go in `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`.
 - Record triage state as a `Status:` line near the top of each ticket (see `docs/agents/triage-labels.md`).

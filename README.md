@@ -73,11 +73,12 @@ The site is a static build deployed to GitHub Pages by GitHub Actions on every p
 
 ## Project documents
 
-- [`PRD.md`](PRD.md) — product requirements and data contracts.
-- [`CONTEXT.md`](CONTEXT.md) — glossary and naming rules.
+- [`.scratch/`](.scratch/) — current feature specs and local issue tickets.
+- [`CONTEXT.md`](CONTEXT.md) — living glossary and naming rules.
 - [`AGENTS.md`](AGENTS.md) — operating manual for coding agents.
-- [`PROMPT.md`](PROMPT.md) — the master implementation prompt with milestone gates.
 - [`docs/adr/`](docs/adr/) — architecture decision records.
+- [`docs/history/PRD-v1.md`](docs/history/PRD-v1.md) — historical v1 product requirements and data contracts.
+- [`PROMPT.md`](PROMPT.md) — historical v1 build prompt.
 
 ## Roadmap
 
