@@ -124,8 +124,11 @@ export const strings = {
   },
 
   statsPage: {
-    lead: "Only the stacks you have trained appear here, most recent first.",
+    lead:
+      "Only the stacks you have trained appear here. Basic and Card +3 are tracked separately.",
     dataActions: "Backup and reset",
+    stackSelectLabel: "Stack",
+    modeTabsLabel: "Mode",
     empty: "No practice yet. Train a stack to see your stats here.",
     currentStreak: "Current streak",
     bestStreak: "Best streak",
@@ -140,7 +143,7 @@ export const strings = {
     missMeta: (position: number, at: string) => `Position ${position} · ${at}`,
     deleteTrainingData: "Delete training data",
     deleteStackConfirm: (name: string) =>
-      `Delete training data for "${name}"? Its streaks, practice days, and recent misses will be removed. The stack itself stays.`,
+      `Delete training data for "${name}"? All modes' streaks, practice days, and recent misses will be removed. The stack itself stays.`,
     deleted: (name: string) => `Training data for "${name}" deleted.`,
   },
 

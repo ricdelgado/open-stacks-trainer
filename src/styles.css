@@ -745,6 +745,21 @@ p {
   margin-top: 1.1rem;
 }
 
+.stats-back--top {
+  margin-top: 0.75rem;
+}
+
+.stats-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.stats-mode-tab {
+  min-height: 44px;
+}
+
 .button--danger {
   border-color: #e3b6ae;
   background: var(--surface);

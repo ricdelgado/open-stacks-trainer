@@ -2,6 +2,7 @@ import { builtInStacks, getBuiltInStack } from "./data/stacks";
 import { applyAnswerToState, type SessionProgress } from "./domain/scoring";
 import { generateSession, type GeneratedSession } from "./domain/session";
 import { withSettings } from "./domain/settings";
+import { withoutStackStats } from "./domain/stats-selection";
 import type { AppState, Direction, Mode } from "./domain/types";
 import { parseRoute, type Route } from "./router";
 import { renderEditor } from "./screens/editor";
@@ -295,9 +296,10 @@ export function startApp(appRoot: HTMLElement): void {
         return result;
       },
       deleteStackStats(stackId) {
-        const stats = { ...state.stats };
-        delete stats[stackId];
-        return persistState({ ...state, stats });
+        return persistState({
+          ...state,
+          stats: withoutStackStats(state.stats, stackId),
+        });
       },
       upsertCustomStack(stack) {
         const exists = state.customStacks.some((item) => item.id === stack.id);
@@ -312,8 +314,7 @@ export function startApp(appRoot: HTMLElement): void {
         const customStacks = state.customStacks.filter(
           (stack) => stack.id !== stackId,
         );
-        const stats = { ...state.stats };
-        delete stats[stackId];
+        const stats = withoutStackStats(state.stats, stackId);
         const selectedStackId =
           state.settings.selectedStackId === stackId
             ? DEFAULT_STACK_ID
