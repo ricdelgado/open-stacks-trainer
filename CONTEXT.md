@@ -6,9 +6,11 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Open Stacks Trainer** — a free, static, browser-only trainer for memorized card stacks. No accounts, no server, no spaced repetition.
 
-**Basic mode** — the only training mode in v1: one shuffled pass through all 52 positions, one prompt at a time, self-graded after reveal.
+**Mode** — the training variant whose stats are tracked separately. v2 modes are **Basic** and **Card +3**. Stats are keyed by stack ID and then by mode. Endless is a session modifier, not a mode: it counts toward the active mode.
 
-**Future modes** — Quartets (Pit Hartling), ACAAN, Endless, and Cyclic stacks. Visible in the mode selector as disabled “later” entries, never implemented in v1.
+**Basic mode** — one shuffled pass through all 52 positions, one prompt at a time, self-graded after reveal. The v1 mode and the v2 default.
+
+**Future modes** — Quartets (Pit Hartling) and ACAAN are later modes. Cyclic stacks need a different model and are out of scope.
 
 ## Core vocabulary
 
@@ -45,7 +47,13 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Miss** — a graded incorrect answer. Use “miss,” not “wrong” or “failure.”
 
-**Miss log / recent misses** — the last 20 misses for a stack, newest first, each with card, position, direction, and timestamp. Stored so a future “drill my recent misses” mode can use it.
+**Miss log / recent misses** — the last 20 misses for a stack and mode, newest first, each with card, position, direction, and timestamp. Stored so a future “drill my recent misses” mode can use it.
+
+**Per-card record** — per stack and mode, stored by card code: current streak, times missed, elapsed tenths, correct timed answers, and reinforcement flag. A missing record means zeros.
+
+**Card streak** — the per-card consecutive Got it count within a mode, reset by a miss. Distinct from the stack-level current streak.
+
+**Reinforcement** — a weak-card flag: set after a miss, cleared after five consecutive correct answers for that card.
 
 **Current streak** — the number of consecutive correct answers for a stack, persisted across sessions. A miss resets it to 0.
 
@@ -57,7 +65,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Practice day** — one local calendar date (`YYYY-MM-DD`) with the number of cards answered and how many were correct. There is one entry per day.
 
-**Stats** — the persisted per-stack record: current streak, best streak, total answered, total correct, last practiced timestamp, practice days, and recent misses.
+**Stats** — the persisted record for one stack and one mode: current streak, best streak, total answered, total correct, last practiced timestamp, practice days, recent misses, and per-card records.
 
 **Accuracy** — `totalCorrect / totalAnswered`, displayed as a whole percent. With zero answers, display “—”.
 
@@ -65,7 +73,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Storage key** — the single `localStorage` key `open-stacks-trainer` holding one versioned JSON object.
 
-**Schema version** — the `schemaVersion` field inside the stored JSON. v1 is `1`. Future versions migrate; a newer version must not be overwritten.
+**Schema version** — the `schemaVersion` field inside the stored JSON. v1 is `1`; v2 is `2`. A v1 payload migrates automatically into the Basic bucket; a newer version must not be overwritten.
 
 **Stack ID** — a stable identifier. Built-ins use `mnemonica`, `aronson`, `memorandum`. Customs use `custom-<uuid>`. Renaming never changes the ID, so stats survive.
 
@@ -77,7 +85,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Delete all data** — a double-confirmed action that removes the storage key, so stats, custom stacks, and settings are gone. Built-in stacks remain because they are code.
 
-**Delete training data** — a per-stack action that removes only that stack’s stats. The custom stack itself remains.
+**Delete training data** — a per-stack action that removes every mode’s stats for that stack, including per-card and reinforcement data. The custom stack itself remains.
 
 **Write-through** — every graded answer is saved immediately; a reload does not lose completed answers.
 
@@ -87,7 +95,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Training screen** — the active session: progress (`answered/52`), current streak, direction label, front, Answer, then Missed/Got it after reveal.
 
-**Stats page** — practiced stacks only, most recent first, with per-stack stats and global backup/restore/delete actions.
+**Stats page** — stack-focused, per mode: stack selector, mode tabs, per-mode figures, and the per-card table, with global backup/restore/delete actions.
 
 **My Stacks** — the stack management screen: built-ins (view only) and customs (view, edit, export, delete), plus Create stack and Import stack.
 
@@ -111,7 +119,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 - Position 1 is the top of the face-down deck.
 - Built-in data is never generated, reordered, or “corrected” by an agent.
 - Custom stacks and stats stay in the browser; nothing is uploaded.
-- Stats are keyed by stable stack ID.
+- Stats are keyed by stable stack ID and then mode.
 - Every answer is persisted immediately.
 - Built-in stacks are read-only; custom stacks are editable.
 - No account, no network, no cookies.
@@ -123,7 +131,7 @@ Stack (52 ordered cards)
   └── Session (one shuffled pass of 52 items)
         └── Item (position + card + direction)
               └── Reveal → Grade (Got it / Missed)
-                    └── Stats update (streak, practice day, recent miss)
+                    └── Stats update (mode streak, per-card record, practice day, recent miss)
 ```
 
 A stack is data. A session is a temporary consumer of that data. Future modes are additional consumers; they must not change the stack model.

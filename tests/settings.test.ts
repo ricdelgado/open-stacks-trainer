@@ -20,4 +20,14 @@ describe("settings updates", () => {
     expect(state.settings.selectedStackId).toBe("memorandum");
     expect(state.settings.direction).toBe("position-to-card");
   });
+
+  it("updates the new v2 toggles without dropping existing settings", () => {
+    let state = createDefaultState();
+    state = withSettings(state, { mode: "card-plus-3", endless: true });
+
+    expect(state.settings.mode).toBe("card-plus-3");
+    expect(state.settings.endless).toBe(true);
+    expect(state.settings.selectedStackId).toBe("mnemonica");
+    expect(state.settings.direction).toBe("mixed");
+  });
 });

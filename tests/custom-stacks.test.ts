@@ -78,12 +78,14 @@ describe("custom stacks", () => {
     const state = createDefaultState("custom-1");
     state.customStacks = [stack];
     state.stats["custom-1"] = {
-      ...emptyStats("custom-1"),
-      currentStreak: 4,
-      bestStreak: 9,
-      totalAnswered: 12,
-      totalCorrect: 10,
-      lastPracticedAt: "2026-11-21T12:00:00.000Z",
+      basic: {
+        ...emptyStats("custom-1"),
+        currentStreak: 4,
+        bestStreak: 9,
+        totalAnswered: 12,
+        totalCorrect: 10,
+        lastPracticedAt: "2026-11-21T12:00:00.000Z",
+      },
     };
     expect(store.save(state)).toEqual({ ok: true });
 
@@ -107,6 +109,6 @@ describe("custom stacks", () => {
 
     const reloaded = new AppStore(storage).load();
     expect(reloaded.state.customStacks[0]?.id).toBe("custom-1");
-    expect(reloaded.state.stats["custom-1"]?.totalAnswered).toBe(12);
+    expect(reloaded.state.stats["custom-1"]?.basic?.totalAnswered).toBe(12);
   });
 });

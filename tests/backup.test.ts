@@ -6,7 +6,7 @@ import {
   type BackupFile,
 } from "../src/domain/backup";
 import { FULL_DECK } from "../src/domain/cards";
-import { emptyStats } from "../src/domain/scoring";
+import { emptyCardStats, emptyStats } from "../src/domain/scoring";
 import type { AppState, CustomStack } from "../src/domain/types";
 import { createDefaultState } from "../src/storage/app-store";
 
@@ -30,21 +30,23 @@ function stateWithPractice(): AppState {
   state.settings.direction = "card-to-position";
   state.customStacks = [customStack("custom-1", "My Stack")];
   state.stats["custom-1"] = {
-    ...emptyStats("custom-1"),
-    currentStreak: 2,
-    bestStreak: 5,
-    totalAnswered: 10,
-    totalCorrect: 8,
-    lastPracticedAt: "2026-11-21T12:00:00.000Z",
-    practiceDays: [{ date: "2026-11-21", answered: 10, correct: 8 }],
-    recentMisses: [
-      {
-        card: "7D",
-        position: 7,
-        direction: "position-to-card",
-        at: "2026-11-21T11:59:00.000Z",
-      },
-    ],
+    basic: {
+      ...emptyStats("custom-1"),
+      currentStreak: 2,
+      bestStreak: 5,
+      totalAnswered: 10,
+      totalCorrect: 8,
+      lastPracticedAt: "2026-11-21T12:00:00.000Z",
+      practiceDays: [{ date: "2026-11-21", answered: 10, correct: 8 }],
+      recentMisses: [
+        {
+          card: "7D",
+          position: 7,
+          direction: "position-to-card",
+          at: "2026-11-21T11:59:00.000Z",
+        },
+      ],
+    },
   };
   return state;
 }
@@ -61,7 +63,7 @@ describe("backup export and restore", () => {
     expect(backup).toMatchObject({
       format: "open-stacks-trainer-backup",
       formatVersion: 1,
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt: new Date(2026, 10, 21, 12, 0, 0).toISOString(),
     });
     expect(backup.customStacks).toEqual(state.customStacks);
@@ -77,13 +79,29 @@ describe("backup export and restore", () => {
     expect(result.state).toEqual(state);
   });
 
+  it("deep-copies nested mode and card stats", () => {
+    const state = stateWithPractice();
+    const basic = state.stats["custom-1"]?.basic;
+    if (!basic) throw new Error("expected basic stats");
+    basic.cards["7D"] = emptyCardStats();
+
+    const backup = backupFor(state);
+    const backupCard = backup.stats["custom-1"]?.basic?.cards["7D"];
+    if (!backupCard) throw new Error("expected backup card");
+    backupCard.timesMissed = 99;
+
+    expect(basic.cards["7D"]?.timesMissed).toBe(0);
+  });
+
   it("replaces rather than merges when parsing a backup", () => {
     const current = stateWithPractice();
     current.stats.mnemonica = {
-      ...emptyStats("mnemonica"),
-      totalAnswered: 3,
-      totalCorrect: 1,
-      lastPracticedAt: "2026-11-22T08:00:00.000Z",
+      basic: {
+        ...emptyStats("mnemonica"),
+        totalAnswered: 3,
+        totalCorrect: 1,
+        lastPracticedAt: "2026-11-22T08:00:00.000Z",
+      },
     };
     current.customStacks.push(customStack("custom-2", "Other Stack"));
 
@@ -95,6 +113,38 @@ describe("backup export and restore", () => {
     expect(result.state.customStacks).toEqual([]);
     expect(result.state.stats).toEqual({});
     expect(result.state.settings.selectedStackId).toBe("aronson");
+  });
+
+  it("migrates a schema v1 backup into schema v2", () => {
+    const v1 = {
+      format: "open-stacks-trainer-backup",
+      formatVersion: 1,
+      schemaVersion: 1,
+      exportedAt: "2026-11-21T12:00:00.000Z",
+      settings: { selectedStackId: "mnemonica", direction: "mixed" },
+      customStacks: [],
+      stats: {
+        mnemonica: {
+          stackId: "mnemonica",
+          currentStreak: 3,
+          bestStreak: 9,
+          totalAnswered: 20,
+          totalCorrect: 17,
+          lastPracticedAt: "2026-11-21T12:00:00.000Z",
+          practiceDays: [{ date: "2026-11-21", answered: 20, correct: 17 }],
+          recentMisses: [],
+        },
+      },
+    };
+
+    const result = parseBackup(v1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.schemaVersion).toBe(2);
+    expect(result.state.settings.mode).toBe("basic");
+    const basic = result.state.stats.mnemonica?.basic;
+    expect(basic?.totalAnswered).toBe(20);
+    expect(basic?.cards).toEqual({});
   });
 
   it("names the backup file with the local date", () => {
@@ -123,7 +173,7 @@ describe("backup export and restore", () => {
   });
 
   it("refuses a newer schema version", () => {
-    const backup = { ...backupFor(stateWithPractice()), schemaVersion: 2 };
+    const backup = { ...backupFor(stateWithPractice()), schemaVersion: 3 };
     expect(parseBackup(backup)).toEqual({
       ok: false,
       error: { code: "newer-schema" },

@@ -1,8 +1,9 @@
-import { isRecord, parseAppState } from "../domain/app-state";
+import { migrateState } from "../domain/migrate";
+import { DEFAULT_SETTINGS_TOGGLES } from "../domain/settings";
 import type { AppState } from "../domain/types";
 
 export const STORAGE_KEY = "open-stacks-trainer";
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const DEFAULT_STACK_ID = "mnemonica";
 
 export interface StorageLike {
@@ -30,10 +31,11 @@ export function createDefaultState(
   selectedStackId: string = DEFAULT_STACK_ID,
 ): AppState {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     settings: {
       selectedStackId,
       direction: "mixed",
+      ...DEFAULT_SETTINGS_TOGGLES,
     },
     customStacks: [],
     stats: {},
@@ -92,29 +94,25 @@ export class AppStore {
       return { ok: false, state: createDefaultState(), issue: this.issue };
     }
 
-    if (!isRecord(parsed) || typeof parsed.schemaVersion !== "number") {
-      this.issue = { kind: "corrupt" };
+    const migration = migrateState(parsed);
+    if (!migration.ok) {
+      this.issue = {
+        kind: migration.reason === "newer-schema" ? "newer-schema" : "corrupt",
+      };
       return { ok: false, state: createDefaultState(), issue: this.issue };
     }
 
-    if (parsed.schemaVersion > SCHEMA_VERSION) {
-      this.issue = { kind: "newer-schema" };
-      return { ok: false, state: createDefaultState(), issue: this.issue };
-    }
-
-    if (parsed.schemaVersion !== SCHEMA_VERSION) {
-      this.issue = { kind: "corrupt" };
-      return { ok: false, state: createDefaultState(), issue: this.issue };
-    }
-
-    const state = parseAppState(parsed);
-    if (!state) {
-      this.issue = { kind: "corrupt" };
-      return { ok: false, state: createDefaultState(), issue: this.issue };
+    if (migration.migrated) {
+      try {
+        this.storage.setItem(STORAGE_KEY, JSON.stringify(migration.state));
+      } catch {
+        // Keep the migrated state in memory; the untouched v1 payload remains
+        // and will migrate again on the next load.
+      }
     }
 
     this.issue = null;
-    return { ok: true, state, issue: null };
+    return { ok: true, state: migration.state, issue: null };
   }
 
   getIssue(): StorageIssue | null {

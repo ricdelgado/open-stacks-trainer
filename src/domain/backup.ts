@@ -1,12 +1,20 @@
 import { builtInStacks } from "../data/stacks";
 import { formatLocalDate } from "./scoring";
-import { isRecord, parseAppState } from "./app-state";
+import { isRecord } from "./app-state";
+import { migrateState } from "./migrate";
 import { validateStackName } from "./stack-validation";
-import type { AppState, CustomStack, StackStats } from "./types";
+import type {
+  AppState,
+  CardStats,
+  CustomStack,
+  Mode,
+  ModeStats,
+  StackModes,
+} from "./types";
 
 export const BACKUP_FORMAT = "open-stacks-trainer-backup";
 export const BACKUP_FORMAT_VERSION = 1;
-export const SUPPORTED_SCHEMA_VERSION = 1;
+export const SUPPORTED_SCHEMA_VERSION = 2;
 
 export interface BackupFile {
   format: typeof BACKUP_FORMAT;
@@ -15,7 +23,7 @@ export interface BackupFile {
   exportedAt: string;
   settings: AppState["settings"];
   customStacks: CustomStack[];
-  stats: Record<string, StackStats>;
+  stats: Record<string, StackModes>;
 }
 
 export type BackupError =
@@ -30,12 +38,30 @@ export type BackupParseResult =
   | { ok: true; state: AppState }
   | { ok: false; error: BackupError };
 
-function copyStats(stats: StackStats): StackStats {
+function copyCardStats(card: CardStats): CardStats {
+  return { ...card };
+}
+
+function copyModeStats(stats: ModeStats): ModeStats {
   return {
     ...stats,
     practiceDays: stats.practiceDays.map((day) => ({ ...day })),
     recentMisses: stats.recentMisses.map((miss) => ({ ...miss })),
+    cards: Object.fromEntries(
+      Object.entries(stats.cards).map(([card, value]) => [
+        card,
+        copyCardStats(value),
+      ]),
+    ),
   };
+}
+
+function copyStackModes(modes: StackModes): StackModes {
+  const copy: StackModes = {};
+  for (const [mode, stats] of Object.entries(modes)) {
+    if (stats) copy[mode as Mode] = copyModeStats(stats);
+  }
+  return copy;
 }
 
 export function createBackup(state: AppState, exportedAt: Date): BackupFile {
@@ -50,9 +76,9 @@ export function createBackup(state: AppState, exportedAt: Date): BackupFile {
       order: [...stack.order],
     })),
     stats: Object.fromEntries(
-      Object.entries(state.stats).map(([stackId, stats]) => [
+      Object.entries(state.stats).map(([stackId, modes]) => [
         stackId,
-        copyStats(stats),
+        copyStackModes(modes),
       ]),
     ),
   };
@@ -108,24 +134,22 @@ export function parseBackup(value: unknown): BackupParseResult {
   }
   if (value.formatVersion !== BACKUP_FORMAT_VERSION) return invalid();
 
-  if (typeof value.schemaVersion !== "number") return invalid();
-  if (value.schemaVersion > SUPPORTED_SCHEMA_VERSION) {
-    return { ok: false, error: { code: "newer-schema" } };
-  }
-  if (value.schemaVersion !== SUPPORTED_SCHEMA_VERSION) return invalid();
-
   if (typeof value.exportedAt !== "string") return invalid();
 
-  const state = parseAppState({
-    schemaVersion: SUPPORTED_SCHEMA_VERSION,
+  const migration = migrateState({
+    schemaVersion: value.schemaVersion,
     settings: value.settings,
     customStacks: value.customStacks,
     stats: value.stats,
   });
-  if (!state) return invalid();
+  if (!migration.ok) {
+    return migration.reason === "newer-schema"
+      ? { ok: false, error: { code: "newer-schema" } }
+      : invalid();
+  }
 
-  const nameError = validateCustomStackNames(state.customStacks);
+  const nameError = validateCustomStackNames(migration.state.customStacks);
   if (nameError) return { ok: false, error: nameError };
 
-  return { ok: true, state };
+  return { ok: true, state: migration.state };
 }

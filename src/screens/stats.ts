@@ -6,7 +6,7 @@ import {
   type BackupError,
 } from "../domain/backup";
 import { accuracyPercent } from "../domain/scoring";
-import type { AppState, StackStats } from "../domain/types";
+import type { AppState, ModeStats } from "../domain/types";
 import { strings } from "../strings";
 import { createCardFace } from "../ui/card-face";
 import { confirmAction } from "../ui/confirm";
@@ -76,7 +76,7 @@ function figure(label: string, value: string): HTMLElement {
 
 function renderStatsCard(
   stackId: string,
-  stackStats: StackStats,
+  stackStats: ModeStats,
   descriptor: StackDescriptor,
   onDelete: (stackId: string, name: string) => void,
 ): HTMLElement {
@@ -293,18 +293,25 @@ export const renderStats: Screen = (root, context) => {
   root.append(actions, status);
 
   const practiced = Object.entries(state.stats)
-    .filter(([, stackStats]) => stackStats.totalAnswered > 0)
-    .map(([stackId, stackStats]) => ({
-      stackId,
-      stats: stackStats,
-      descriptor: describeStack(state, stackId),
+    .map(([stackId, modes]) => ({ stackId, stats: modes.basic }))
+    .filter(
+      (
+        entry,
+      ): entry is {
+        stackId: string;
+        stats: ModeStats;
+      } => entry.stats !== undefined && entry.stats.totalAnswered > 0,
+    )
+    .map((entry) => ({
+      ...entry,
+      descriptor: describeStack(state, entry.stackId),
     }))
     .filter(
       (
         entry,
       ): entry is {
         stackId: string;
-        stats: StackStats;
+        stats: ModeStats;
         descriptor: StackDescriptor;
       } => entry.descriptor !== null,
     )

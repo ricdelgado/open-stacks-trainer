@@ -6,9 +6,23 @@ export const DIRECTIONS = [
 
 export type Direction = (typeof DIRECTIONS)[number];
 
+export const MODES = ["basic", "card-plus-3"] as const;
+
+export type Mode = (typeof MODES)[number];
+
+export const DEFAULT_ACCELERATE_THRESHOLD_TENTHS = 10;
+
+export const REINFORCEMENT_CLEAR_STREAK = 5;
+
 export interface Settings {
   selectedStackId: string;
   direction: Direction;
+  mode: Mode;
+  reinforcement: boolean;
+  accelerate: boolean;
+  accelerateThresholdTenths: number;
+  endless: boolean;
+  language: string;
 }
 
 export interface CustomStack {
@@ -33,8 +47,17 @@ export interface MissRecord {
   at: string;
 }
 
-export interface StackStats {
+export interface CardStats {
+  currentStreak: number;
+  timesMissed: number;
+  elapsedTenths: number;
+  correctTimedAnswers: number;
+  inReinforcement: boolean;
+}
+
+export interface ModeStats {
   stackId: string;
+  mode: Mode;
   currentStreak: number;
   bestStreak: number;
   totalAnswered: number;
@@ -42,15 +65,22 @@ export interface StackStats {
   lastPracticedAt: string;
   practiceDays: PracticeDay[];
   recentMisses: MissRecord[];
+  cards: Record<string, CardStats>;
 }
 
+export type StackModes = Partial<Record<Mode, ModeStats>>;
+
 export interface AppState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   settings: Settings;
   customStacks: CustomStack[];
-  stats: Record<string, StackStats>;
+  stats: Record<string, StackModes>;
 }
 
 export function isDirection(value: unknown): value is Direction {
   return typeof value === "string" && DIRECTIONS.includes(value as Direction);
+}
+
+export function isMode(value: unknown): value is Mode {
+  return typeof value === "string" && MODES.includes(value as Mode);
 }

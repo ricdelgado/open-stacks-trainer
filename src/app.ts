@@ -362,7 +362,9 @@ export function startApp(appRoot: HTMLElement): void {
         if (!graded) return null;
 
         const stackId = runner.generated.stackId;
-        const stats = applyAnswer(stackId, state.stats[stackId], {
+        const mode = state.settings.mode;
+        const stackModes = state.stats[stackId] ?? {};
+        const stats = applyAnswer(stackId, mode, stackModes[mode], {
           card: item.card,
           position: item.position,
           direction: item.direction,
@@ -371,7 +373,10 @@ export function startApp(appRoot: HTMLElement): void {
         });
         const save = persistState({
           ...state,
-          stats: { ...state.stats, [stackId]: stats },
+          stats: {
+            ...state.stats,
+            [stackId]: { ...stackModes, [mode]: stats },
+          },
         });
 
         const complete = runner.isComplete;
@@ -406,7 +411,8 @@ export function startApp(appRoot: HTMLElement): void {
           answered: runner.progress.answered,
           total: runner.generated.items.length,
           persistedStreak:
-            state.stats[runner.generated.stackId]?.currentStreak ?? 0,
+            state.stats[runner.generated.stackId]?.[state.settings.mode]
+              ?.currentStreak ?? 0,
           sessionBestRun: runner.progress.bestRun,
         };
       },

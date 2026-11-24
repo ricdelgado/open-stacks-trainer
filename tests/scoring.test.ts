@@ -3,7 +3,9 @@ import {
   accuracyPercent,
   applyAnswer,
   applySessionAnswer,
+  averageElapsedTenths,
   createSessionProgress,
+  emptyCardStats,
   emptyStats,
   formatLocalDate,
   type AnswerRecord,
@@ -13,6 +15,7 @@ import {
   createDefaultState,
   type StorageLike,
 } from "../src/storage/app-store";
+import type { ModeStats } from "../src/domain/types";
 
 function answer(overrides: Partial<AnswerRecord> = {}): AnswerRecord {
   return {
@@ -52,7 +55,7 @@ describe("stats scoring", () => {
       totalAnswered: 10,
       totalCorrect: 8,
     };
-    const stats = applyAnswer("mnemonica", previous, answer());
+    const stats = applyAnswer("mnemonica", "basic", previous, answer());
 
     expect(stats.currentStreak).toBe(4);
     expect(stats.bestStreak).toBe(5);
@@ -66,8 +69,12 @@ describe("stats scoring", () => {
   });
 
   it("raises the best streak when the current streak passes it", () => {
-    const previous = { ...emptyStats("mnemonica"), currentStreak: 5, bestStreak: 5 };
-    const stats = applyAnswer("mnemonica", previous, answer());
+    const previous = {
+      ...emptyStats("mnemonica"),
+      currentStreak: 5,
+      bestStreak: 5,
+    };
+    const stats = applyAnswer("mnemonica", "basic", previous, answer());
     expect(stats.currentStreak).toBe(6);
     expect(stats.bestStreak).toBe(6);
   });
@@ -82,8 +89,14 @@ describe("stats scoring", () => {
     };
     const stats = applyAnswer(
       "mnemonica",
+      "basic",
       previous,
-      answer({ correct: false, card: "QC", position: 13, direction: "card-to-position" }),
+      answer({
+        correct: false,
+        card: "QC",
+        position: 13,
+        direction: "card-to-position",
+      }),
     );
 
     expect(stats.currentStreak).toBe(0);
@@ -105,16 +118,19 @@ describe("stats scoring", () => {
   it("merges answers into one practice day per date", () => {
     const first = applyAnswer(
       "mnemonica",
+      "basic",
       undefined,
       answer({ at: new Date(2026, 10, 21, 9, 0) }),
     );
     const second = applyAnswer(
       "mnemonica",
+      "basic",
       first,
       answer({ correct: false, at: new Date(2026, 10, 21, 10, 0) }),
     );
     const third = applyAnswer(
       "mnemonica",
+      "basic",
       second,
       answer({ at: new Date(2026, 10, 20, 10, 0) }),
     );
@@ -130,6 +146,7 @@ describe("stats scoring", () => {
     for (let index = 0; index < 25; index += 1) {
       stats = applyAnswer(
         "mnemonica",
+        "basic",
         stats,
         answer({
           correct: false,
@@ -144,18 +161,93 @@ describe("stats scoring", () => {
     expect(stats.recentMisses[19]?.position).toBe(6);
   });
 
+  it("creates a per-card record on a correct answer", () => {
+    const stats = applyAnswer("mnemonica", "basic", undefined, answer());
+    expect(stats.cards["7D"]).toEqual({
+      currentStreak: 1,
+      timesMissed: 0,
+      elapsedTenths: 0,
+      correctTimedAnswers: 0,
+      inReinforcement: false,
+    });
+  });
+
+  it("marks a missed card for reinforcement and counts the miss", () => {
+    const stats = applyAnswer(
+      "mnemonica",
+      "basic",
+      undefined,
+      answer({ card: "QC", correct: false }),
+    );
+    expect(stats.cards["QC"]).toEqual({
+      currentStreak: 0,
+      timesMissed: 1,
+      elapsedTenths: 0,
+      correctTimedAnswers: 0,
+      inReinforcement: true,
+    });
+  });
+
+  it("clears reinforcement after five consecutive correct answers", () => {
+    let stats: ModeStats = {
+      ...emptyStats("mnemonica"),
+      cards: { "7D": { ...emptyCardStats(), inReinforcement: true } },
+    };
+    for (let index = 0; index < 5; index += 1) {
+      stats = applyAnswer("mnemonica", "basic", stats, answer());
+    }
+    expect(stats.cards["7D"]).toMatchObject({
+      currentStreak: 5,
+      inReinforcement: false,
+    });
+  });
+
+  it("accumulates elapsed time only for correct timed answers", () => {
+    let stats = applyAnswer(
+      "mnemonica",
+      "basic",
+      undefined,
+      answer({ elapsedTenths: 24 }),
+    );
+    stats = applyAnswer(
+      "mnemonica",
+      "basic",
+      stats,
+      answer({ elapsedTenths: 36 }),
+    );
+    stats = applyAnswer(
+      "mnemonica",
+      "basic",
+      stats,
+      answer({ elapsedTenths: 99, correct: false }),
+    );
+    stats = applyAnswer("mnemonica", "basic", stats, answer());
+
+    expect(stats.cards["7D"]).toMatchObject({
+      elapsedTenths: 60,
+      correctTimedAnswers: 2,
+    });
+  });
+
+  it("computes the average on demand and returns null without timed answers", () => {
+    expect(averageElapsedTenths(emptyCardStats())).toBeNull();
+    expect(
+      averageElapsedTenths({ ...emptyCardStats(), elapsedTenths: 30, correctTimedAnswers: 3 }),
+    ).toBe(10);
+  });
+
   it("persists graded stats through storage immediately", () => {
     const storage = new MemoryStorage();
     const store = new AppStore(storage);
     store.load();
     const state = createDefaultState();
-    const stats = applyAnswer("mnemonica", undefined, answer());
-    state.stats.mnemonica = stats;
+    const stats = applyAnswer("mnemonica", "basic", undefined, answer());
+    state.stats.mnemonica = { basic: stats };
     expect(store.save(state)).toEqual({ ok: true });
 
     const reloaded = new AppStore(storage).load();
     expect(reloaded.ok).toBe(true);
-    expect(reloaded.state.stats.mnemonica).toEqual(stats);
+    expect(reloaded.state.stats.mnemonica).toEqual({ basic: stats });
   });
 });
 

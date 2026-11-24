@@ -1,4 +1,5 @@
-import type { StackStats } from "./types";
+import type { CardStats, Mode, ModeStats } from "./types";
+import { REINFORCEMENT_CLEAR_STREAK } from "./types";
 import type { ItemDirection } from "./session";
 
 export interface AnswerRecord {
@@ -7,6 +8,7 @@ export interface AnswerRecord {
   direction: ItemDirection;
   correct: boolean;
   at: Date;
+  elapsedTenths?: number;
 }
 
 export interface SessionMiss {
@@ -31,9 +33,20 @@ export function formatLocalDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function emptyStats(stackId: string): StackStats {
+export function emptyCardStats(): CardStats {
+  return {
+    currentStreak: 0,
+    timesMissed: 0,
+    elapsedTenths: 0,
+    correctTimedAnswers: 0,
+    inReinforcement: false,
+  };
+}
+
+export function emptyStats(stackId: string, mode: Mode = "basic"): ModeStats {
   return {
     stackId,
+    mode,
     currentStreak: 0,
     bestStreak: 0,
     totalAnswered: 0,
@@ -41,15 +54,42 @@ export function emptyStats(stackId: string): StackStats {
     lastPracticedAt: "",
     practiceDays: [],
     recentMisses: [],
+    cards: {},
+  };
+}
+
+export function applyCardAnswer(
+  card: CardStats,
+  answer: AnswerRecord,
+): CardStats {
+  if (!answer.correct) {
+    return {
+      ...card,
+      currentStreak: 0,
+      timesMissed: card.timesMissed + 1,
+      inReinforcement: true,
+    };
+  }
+
+  const currentStreak = card.currentStreak + 1;
+  const timed = answer.elapsedTenths !== undefined;
+  return {
+    ...card,
+    currentStreak,
+    inReinforcement:
+      currentStreak >= REINFORCEMENT_CLEAR_STREAK ? false : card.inReinforcement,
+    elapsedTenths: card.elapsedTenths + (answer.elapsedTenths ?? 0),
+    correctTimedAnswers: card.correctTimedAnswers + (timed ? 1 : 0),
   };
 }
 
 export function applyAnswer(
   stackId: string,
-  stats: StackStats | undefined,
+  mode: Mode,
+  stats: ModeStats | undefined,
   answer: AnswerRecord,
-): StackStats {
-  const base = stats ?? emptyStats(stackId);
+): ModeStats {
+  const base = stats ?? emptyStats(stackId, mode);
   const date = formatLocalDate(answer.at);
   const at = answer.at.toISOString();
 
@@ -88,9 +128,16 @@ export function applyAnswer(
         ...base.recentMisses,
       ].slice(0, 20);
 
+  const previousCard = base.cards[answer.card] ?? emptyCardStats();
+  const cards = {
+    ...base.cards,
+    [answer.card]: applyCardAnswer(previousCard, answer),
+  };
+
   return {
     ...base,
     stackId,
+    mode,
     currentStreak,
     bestStreak: Math.max(base.bestStreak, currentStreak),
     totalAnswered: base.totalAnswered + 1,
@@ -98,7 +145,13 @@ export function applyAnswer(
     lastPracticedAt: at,
     practiceDays,
     recentMisses,
+    cards,
   };
+}
+
+export function averageElapsedTenths(card: CardStats): number | null {
+  if (card.correctTimedAnswers <= 0) return null;
+  return card.elapsedTenths / card.correctTimedAnswers;
 }
 
 export function createSessionProgress(): SessionProgress {
