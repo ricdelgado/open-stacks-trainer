@@ -2,7 +2,7 @@
 
 **Status:** implementation-ready  
 **Owner:** ricdelgado  
-**Source of truth:** this document. The original interview is `design discussion.txt`; where the two differ, this PRD wins.  
+**Source of truth:** this document for the v1 behavior it describes.
 **Target:** static web app, free hosting on GitHub Pages, built by an AI agent under human review.
 
 ---
@@ -747,6 +747,6 @@ Repository URL: `https://github.com/ricdelgado/open-stacks-trainer`.
 ## 18. Further Notes
 
 - The repository may be named `open-stacks-trainer` even if the local folder is `open-stack-trainer`; the local folder name does not affect the app or the Pages URL.
-- The original design interview is kept as `design discussion.txt` for history. It is not the spec.
+- This document is the v1 spec; v2 feature specs live under `.scratch/<feature>/spec.md`.
 - The implementing agent must use the Matt Pocock engineering skills/workflow already configured in this repo: local-markdown issue tracker under `.scratch/`, the five default triage labels, and domain docs in `CONTEXT.md` plus `docs/adr/`.
 - If a future mode needs a different session shape, keep the stack data and card model unchanged; modes should be consumers of the same ordered stack.

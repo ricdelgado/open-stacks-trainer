@@ -43,7 +43,6 @@ Do **not** redesign the product. Do **not** build future modes. Do **not** inven
 6. `data/stacks.json` and `data/checksums.json` — the verified built-in data.
 7. `PROMPT.md` (this file) — the gated workflow.
 
-`design discussion.txt` is the original interview and is **history only**. Do not use it to override `PRD.md`.
 
 ## State of the repository
 
@@ -177,7 +176,7 @@ Do not proceed on silence. Do not combine milestones. Do not push before M4 appr
    node scripts/verify-stacks.mjs
    ```
 3. Confirm `data/stacks.json` and `data/checksums.json` are unchanged and the verifier passes.
-4. If there is no `origin` remote, guide the human through **one** of the options in `SETUP.md` §3:
+4. If there is no `origin` remote, guide the human through connecting the repository to GitHub:
    - GitHub CLI (`gh auth login`, then `gh repo create ...` or `git remote add ...`);
    - GitHub Desktop;
    - HTTPS with a personal access token.
@@ -207,7 +206,7 @@ After the human approves Gate 0, commit the setup pack (docs, data, verifier, wo
 1. Scaffold Vite + vanilla TypeScript. The folder is not empty, so either:
    - create the scaffold in a temporary folder and copy in `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, and the minimal `src/` entry files; or
    - run `npm create vite@latest . -- --template vanilla-ts` and choose the option to ignore existing files if prompted.
-   Do **not** overwrite `PRD.md`, `CONTEXT.md`, `AGENTS.md`, `README.md`, `LICENSE`, `PROMPT.md`, `SETUP.md`, `CONTINUE.md`, `data/`, `docs/`, `scripts/`, `tests/`, `.github/`, `.scratch/`, `.gitignore`, or `design discussion.txt`.
+   Do **not** overwrite `PRD.md`, `CONTEXT.md`, `AGENTS.md`, `README.md`, `LICENSE`, `PROMPT.md`, `data/`, `docs/`, `scripts/`, `tests/`, `.github/`, `.scratch/`, or `.gitignore`.
 2. Install Vite, TypeScript, and Vitest. Add scripts:
    ```json
    {

@@ -6,7 +6,7 @@ This file is for the coding agent. It is not the product spec. Read `PRD.md` for
 
 Open Stacks Trainer is a free, static, browser-only trainer for memorized card stacks. v1 trains Mnemonica, Aronson, Memorandum, and user-made custom stacks by asking card ↔ position pairs in one shuffled pass of 52, self-graded after reveal. Progress lives in `localStorage`. There is no backend, no account, no analytics, and no network traffic after the assets load.
 
-The original design interview is `design discussion.txt`. It is history. `PRD.md` wins if they differ.
+`PRD.md` is the v1 product spec; v2 feature specs live under `.scratch/<feature>/spec.md`.
 
 ## Non-negotiables
 

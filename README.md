@@ -77,9 +77,7 @@ The site is a static build deployed to GitHub Pages by GitHub Actions on every p
 - [`CONTEXT.md`](CONTEXT.md) — glossary and naming rules.
 - [`AGENTS.md`](AGENTS.md) — operating manual for coding agents.
 - [`PROMPT.md`](PROMPT.md) — the master implementation prompt with milestone gates.
-- [`SETUP.md`](SETUP.md) — plain-language setup and deployment guide.
 - [`docs/adr/`](docs/adr/) — architecture decision records.
-- [`design discussion.txt`](design%20discussion.txt) — the original design interview; history only.
 
 ## Roadmap
 

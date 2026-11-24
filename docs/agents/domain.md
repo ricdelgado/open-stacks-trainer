@@ -43,6 +43,6 @@ If your output contradicts an existing ADR, surface it explicitly rather than si
 
 ## Data and product docs are part of the domain
 
-- `PRD.md` is the product source of truth; `design discussion.txt` is history only.
+- `PRD.md` is the v1 product spec; v2 feature specs live under `.scratch/<feature>/spec.md`.
 - `data/stacks.json` is the verified built-in data. Never regenerate or “correct” it.
 - `data/SOURCES.md` records provenance. A change to built-in data is a reviewed change, not a test fix.
