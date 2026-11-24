@@ -68,3 +68,15 @@ training toggles move to a collapsible Training settings panel on the main menu.
   still persist; 320 px has no horizontal scroll.
 
 Awaiting human review before commit.
+
+## Comments
+
+- Follow-up approved changes: Endless moved out of Training settings to sit between
+  Direction and the Training settings panel; the three training toggles are now
+  right-aligned switches; the Training settings summary gained a visible expand
+  chevron. The mode label is now Next 3 cards, and the training front/back slots
+  keep their position before and after reveal.
+- Second follow-up: the training toggles lost their section titles; Reinforcement and
+  Accelerate show only the switch, label, and hint; Endless shows only its label and
+  switch. The four menu-bottom controls (Stats, My Stacks, How to use, Settings) are
+  now a 2×2 grid.

@@ -30,7 +30,7 @@ export const ptBR = {
     directionLabel: "Direção",
     modeLabel: "Modo",
     modeBasic: "Básico",
-    modeCardPlus3: "Card +3",
+    modeCardPlus3: "Próximas 3 cartas",
     modeQuartets: "Quartetos",
     modeAcaan: "ACAAN",
     modeCyclic: "Baralhos cíclicos",
@@ -136,7 +136,7 @@ export const ptBR = {
 
   statsPage: {
     lead:
-      "Só aparecem aqui os baralhos que você treinou. Básico e Card +3 são registrados separadamente.",
+      "Só aparecem aqui os baralhos que você treinou. Básico e Próximas 3 cartas são registrados separadamente.",
     dataActions: "Backup e redefinição",
     stackSelectLabel: "Baralho",
     modeTabsLabel: "Modo",
@@ -196,19 +196,9 @@ export const ptBR = {
     languageOption: (name: string, current: boolean) =>
       current ? `${name} — atual` : name,
     reinforcement: "Reforço",
-    reinforcementToggle: "Ativar reforço",
     reinforcementHint:
       "Cartas que você errar voltam com mais frequência até você acertar cinco vezes seguidas.",
-    reinforcementSummary: (stack: string, mode: string) =>
-      `Lista de reforço: ${stack} · ${mode}`,
-    reinforcementCount: (count: number) =>
-      count === 1
-        ? "1 carta está aguardando reforço."
-        : `${count} cartas estão aguardando reforço.`,
-    reinforcementEmpty:
-      "Nenhuma carta aguardando reforço. Uma carta errada entra na lista depois de ser avaliada.",
     accelerate: "Aceleração",
-    accelerateToggle: "Ativar aceleração",
     accelerateHint:
       "Cartas que levam mais tempo que o seu limite voltam com mais frequência.",
     accelerateThreshold: "Limite de carta lenta",
@@ -225,9 +215,6 @@ export const ptBR = {
         ? "1 carta está acima deste limite."
         : `${count} cartas estão acima deste limite.`,
     endless: "Sem fim",
-    endlessToggle: "Ativar sem fim",
-    endlessHint:
-      "Continue treinando em lotes de duas passagens embaralhadas até sair. Uma carta errada ou lenta ainda gera prompts extras.",
   },
 
   backup: {
@@ -367,7 +354,7 @@ export const ptBR = {
     sections: [
       {
         title: "1. Escolha um baralho, uma direção e um modo",
-        body: "Escolha o baralho que quer treinar. Posição → carta pede a carta de uma posição. Carta → posição pede a posição de uma carta. Misto escolhe uma direção para cada prompt. Básico pede uma resposta. Card +3 pede as três cartas depois da carta da frente, voltando da posição 52 para a 1.",
+        body: "Escolha o baralho que quer treinar. Posição → carta pede a carta de uma posição. Carta → posição pede a posição de uma carta. Misto escolhe uma direção para cada prompt. Básico pede uma resposta. Próximas 3 cartas pede as três cartas depois da carta da frente, voltando da posição 52 para a 1.",
       },
       {
         title: "2. Lembre e revele",

@@ -4,7 +4,10 @@ import { strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
 import { openHelpDialog } from "../ui/help-dialog";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
-import { createTrainingSettings } from "../ui/training-settings";
+import {
+  createEndlessSetting,
+  createTrainingSettings,
+} from "../ui/training-settings";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
 
@@ -138,7 +141,12 @@ export const renderMenu: Screen = (root, context) => {
     );
   });
 
-  startPanel.append(directionGroup, trainingSettings, formStatus);
+  startPanel.append(
+    directionGroup,
+    createEndlessSetting(context, formStatus),
+    trainingSettings,
+    formStatus,
+  );
   root.append(startPanel);
 
   select.addEventListener("change", () => {
@@ -198,7 +206,7 @@ export const renderMenu: Screen = (root, context) => {
   modeGroup.append(modeList);
   root.append(modeGroup);
 
-  const nav = el("nav", "menu-nav");
+  const bottom = el("div", "menu-bottom-actions");
   const statsLink = link("#/stats", "", "nav-card");
   statsLink.append(
     el("span", "nav-card__title", strings.menu.stats),
@@ -209,10 +217,8 @@ export const renderMenu: Screen = (root, context) => {
     el("span", "nav-card__title", strings.menu.myStacks),
     el("span", "nav-card__hint", strings.menu.myStacksHint),
   );
-  nav.append(statsLink, stacksLink);
-  root.append(nav);
-  root.append(help);
-  root.append(settings);
+  bottom.append(statsLink, stacksLink, help, settings);
+  root.append(bottom);
 
   return () => {
     if (helpDialog) {

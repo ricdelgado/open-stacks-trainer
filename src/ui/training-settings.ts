@@ -1,33 +1,13 @@
-import { getBuiltInStack } from "../data/stacks";
 import {
   ACCELERATE_THRESHOLDS,
   accelerateCandidates,
   isAccelerateThreshold,
 } from "../domain/accelerate";
-import type { Mode, Settings } from "../domain/types";
+import type { Settings } from "../domain/types";
 import { strings } from "../strings";
 import { el, showStatus } from "./elements";
 import { storageMessage } from "./storage-messages";
 import type { AppContext } from "../screens/screen";
-
-function modeLabel(mode: Mode): string {
-  return mode === "basic" ? strings.menu.modeBasic : strings.menu.modeCardPlus3;
-}
-
-function stackNameFor(context: AppContext, stackId: string): string {
-  const builtIn = getBuiltInStack(stackId);
-  if (builtIn) return builtIn.name;
-  return (
-    context.state.customStacks.find((stack) => stack.id === stackId)?.name ??
-    stackId
-  );
-}
-
-function reinforcementCount(context: AppContext): number {
-  const { selectedStackId, mode } = context.state.settings;
-  const cards = context.state.stats[selectedStackId]?.[mode]?.cards ?? {};
-  return Object.values(cards).filter((card) => card.inReinforcement).length;
-}
 
 function accelerateCount(context: AppContext, thresholdTenths: number): number {
   const { selectedStackId, mode } = context.state.settings;
@@ -37,80 +17,60 @@ function accelerateCount(context: AppContext, thresholdTenths: number): number {
   ).length;
 }
 
+function persist(
+  context: AppContext,
+  status: HTMLElement,
+  patch: Partial<Settings>,
+): void {
+  const result = context.updateSettings(patch);
+  status.replaceChildren();
+  if (!result.ok) {
+    showStatus(status, storageMessage(result.reason));
+  }
+}
+
+function toggleOption(
+  id: string,
+  label: string,
+  checked: boolean,
+  onChange: (checked: boolean) => void,
+): HTMLLabelElement {
+  const option = el("label", "mode-option toggle-option");
+  const text = el("span", "mode-option__name", label);
+  const switchWrap = el("span", "toggle-switch");
+  const input = el("input");
+  input.type = "checkbox";
+  input.id = id;
+  input.checked = checked;
+  input.addEventListener("change", () => onChange(input.checked));
+  const track = el("span", "toggle-switch__track");
+  track.setAttribute("aria-hidden", "true");
+  switchWrap.append(input, track);
+  option.append(text, switchWrap);
+  return option;
+}
+
 export function createTrainingSettings(
   context: AppContext,
   status: HTMLElement,
 ): HTMLElement {
-  const persist = (patch: Partial<Settings>): void => {
-    const result = context.updateSettings(patch);
-    status.replaceChildren();
-    if (!result.ok) {
-      showStatus(status, storageMessage(result.reason));
-    }
-  };
-
   const container = el("div", "training-settings__body");
 
-  const reinforcementGroup = el("fieldset", "field");
-  const reinforcementLegend = el(
-    "legend",
-    "field__label",
+  const reinforcementBlock = el("div", "field");
+  const reinforcementOption = toggleOption(
+    "reinforcement-toggle",
     strings.settingsPage.reinforcement,
+    context.state.settings.reinforcement,
+    (checked) => persist(context, status, { reinforcement: checked }),
   );
-  const reinforcementOption = el("label", "mode-option");
-  const reinforcementInput = el("input");
-  reinforcementInput.type = "checkbox";
-  reinforcementInput.id = "reinforcement-toggle";
-  reinforcementInput.checked = context.state.settings.reinforcement;
-  reinforcementInput.addEventListener("change", () => {
-    persist({ reinforcement: reinforcementInput.checked });
-  });
-
-  reinforcementOption.append(
-    reinforcementInput,
-    el("span", "mode-option__name", strings.settingsPage.reinforcementToggle),
-  );
-  reinforcementGroup.append(
-    reinforcementLegend,
+  reinforcementBlock.append(
     reinforcementOption,
     el("p", "field__hint", strings.settingsPage.reinforcementHint),
   );
 
-  const count = reinforcementCount(context);
-  const { selectedStackId, mode } = context.state.settings;
-  const reinforcementList = el("div", "settings-list");
-  reinforcementList.append(
-    el(
-      "p",
-      "field__label",
-      strings.settingsPage.reinforcementSummary(
-        stackNameFor(context, selectedStackId),
-        modeLabel(mode),
-      ),
-    ),
-    el(
-      "p",
-      "field__hint",
-      count === 0
-        ? strings.settingsPage.reinforcementEmpty
-        : strings.settingsPage.reinforcementCount(count),
-    ),
-  );
-
-  const accelerateGroup = el("fieldset", "field");
-  const accelerateLegend = el(
-    "legend",
-    "field__label",
-    strings.settingsPage.accelerate,
-  );
-  const accelerateOption = el("label", "mode-option");
-  const accelerateInput = el("input");
-  accelerateInput.type = "checkbox";
-  accelerateInput.id = "accelerate-toggle";
-  accelerateInput.checked = context.state.settings.accelerate;
-
+  const accelerateBlock = el("div", "field");
   const thresholdField = el("fieldset", "field");
-  thresholdField.hidden = !accelerateInput.checked;
+  thresholdField.hidden = !context.state.settings.accelerate;
   const thresholdLegend = el(
     "legend",
     "field__label",
@@ -141,7 +101,7 @@ export function createTrainingSettings(
       if (!input.checked) return;
       const value = Number(input.value);
       if (!isAccelerateThreshold(value)) return;
-      persist({ accelerateThresholdTenths: value });
+      persist(context, status, { accelerateThresholdTenths: value });
       updateThresholdHint();
     });
     option.append(
@@ -158,51 +118,36 @@ export function createTrainingSettings(
   updateThresholdHint();
   thresholdField.append(thresholdLegend, thresholdGroup, thresholdHint);
 
-  accelerateInput.addEventListener("change", () => {
-    persist({ accelerate: accelerateInput.checked });
-    thresholdField.hidden = !accelerateInput.checked;
-  });
-
-  accelerateOption.append(
-    accelerateInput,
-    el("span", "mode-option__name", strings.settingsPage.accelerateToggle),
+  const accelerateOption = toggleOption(
+    "accelerate-toggle",
+    strings.settingsPage.accelerate,
+    context.state.settings.accelerate,
+    (checked) => {
+      persist(context, status, { accelerate: checked });
+      thresholdField.hidden = !checked;
+    },
   );
-  accelerateGroup.append(
-    accelerateLegend,
+
+  accelerateBlock.append(
     accelerateOption,
     el("p", "field__hint", strings.settingsPage.accelerateHint),
   );
 
-  const endlessGroup = el("fieldset", "field");
-  const endlessLegend = el(
-    "legend",
-    "field__label",
-    strings.settingsPage.endless,
-  );
-  const endlessOption = el("label", "mode-option");
-  const endlessInput = el("input");
-  endlessInput.type = "checkbox";
-  endlessInput.id = "endless-toggle";
-  endlessInput.checked = context.state.settings.endless;
-  endlessInput.addEventListener("change", () => {
-    persist({ endless: endlessInput.checked });
-  });
-  endlessOption.append(
-    endlessInput,
-    el("span", "mode-option__name", strings.settingsPage.endlessToggle),
-  );
-  endlessGroup.append(
-    endlessLegend,
-    endlessOption,
-    el("p", "field__hint", strings.settingsPage.endlessHint),
-  );
-
-  container.append(
-    reinforcementGroup,
-    reinforcementList,
-    accelerateGroup,
-    thresholdField,
-    endlessGroup,
-  );
+  container.append(reinforcementBlock, accelerateBlock, thresholdField);
   return container;
+}
+
+export function createEndlessSetting(
+  context: AppContext,
+  status: HTMLElement,
+): HTMLElement {
+  const group = el("div", "field endless-setting");
+  const option = toggleOption(
+    "endless-toggle",
+    strings.settingsPage.endless,
+    context.state.settings.endless,
+    (checked) => persist(context, status, { endless: checked }),
+  );
+  group.append(option);
+  return group;
 }

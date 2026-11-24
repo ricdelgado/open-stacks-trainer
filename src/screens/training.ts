@@ -107,10 +107,7 @@ export const renderTraining: Screen = (root, context) => {
       : "";
     updateTimerText();
 
-    const pair = el(
-      "div",
-      view.revealed ? "prompt-pair prompt-pair--revealed" : "prompt-pair",
-    );
+    const pair = el("div", "prompt-pair");
     const frontSide = el("div", "prompt-side");
     frontSide.append(
       el(
@@ -124,35 +121,38 @@ export const renderTraining: Screen = (root, context) => {
         ? createPositionFace(view.item.position)
         : createCardFace(view.item.card, "large"),
     );
-    pair.append(frontSide);
 
-    if (view.revealed) {
-      const backSide = el("div", "prompt-side prompt-side--answer");
-      if (view.mode === "card-plus-3") {
-        backSide.append(
-          el("p", "prompt-side__label", strings.training.nextThreeLabel),
-        );
-        const triple = el("div", "card-triple");
-        for (const card of view.item.nextCards ?? []) {
-          triple.append(createCardFace(card, "small"));
-        }
-        backSide.append(triple);
-      } else {
-        backSide.append(
-          el(
-            "p",
-            "prompt-side__label",
-            frontIsPosition(view)
-              ? strings.training.cardLabel
-              : strings.training.positionLabel,
-          ),
-          frontIsPosition(view)
-            ? createCardFace(view.item.card, "large")
-            : createPositionFace(view.item.position),
-        );
+    const backSide = el("div", "prompt-side prompt-side--answer");
+    if (view.mode === "card-plus-3") {
+      backSide.append(
+        el("p", "prompt-side__label", strings.training.nextThreeLabel),
+      );
+      const triple = el("div", "card-triple");
+      for (const card of view.item.nextCards ?? []) {
+        triple.append(createCardFace(card, "small"));
       }
-      pair.append(backSide);
+      backSide.append(triple);
+    } else {
+      backSide.append(
+        el(
+          "p",
+          "prompt-side__label",
+          frontIsPosition(view)
+            ? strings.training.cardLabel
+            : strings.training.positionLabel,
+        ),
+        frontIsPosition(view)
+          ? createCardFace(view.item.card, "large")
+          : createPositionFace(view.item.position),
+      );
     }
+
+    if (!view.revealed) {
+      backSide.classList.add("prompt-side--hidden");
+      backSide.setAttribute("aria-hidden", "true");
+    }
+
+    pair.append(frontSide, backSide);
 
     const controls = el(
       "div",

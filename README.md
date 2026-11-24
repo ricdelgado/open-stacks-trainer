@@ -18,7 +18,7 @@ The original design interview and prompt plan were produced by Qwen4-Max High. T
 
 - **Three verified built-in stacks:** Mnemonica, Aronson, Memorandum.
 - **Three directions:** position → card, card → position, or mixed.
-- **Two modes:** **Basic** asks one card or position at a time. **Card +3** asks for the next three cards after the front card, wrapping from position 52 back to 1.
+- **Two modes:** **Basic** asks one card or position at a time. **Next 3 cards** asks for the next three cards after the front card, wrapping from position 52 back to 1.
 - **Self-graded with a quiet timer:** reveal the answer, then tap **Got it** or **Missed**. A Got it answer records recall time; no typing, no spaced repetition.
 - **Extra practice:** **Reinforcement** brings missed cards back, **Accelerate** brings slow cards back above a chosen threshold, and **Endless** continues in batches of two shuffled passes until you quit.
 - **Streaks and stats:** current streak, best streak, accuracy, practice days, recent misses, average time, and a per-card table with sorting and reinforcement progress.

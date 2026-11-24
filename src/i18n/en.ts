@@ -29,7 +29,7 @@ export const en = {
     directionLabel: "Direction",
     modeLabel: "Mode",
     modeBasic: "Basic",
-    modeCardPlus3: "Card +3",
+    modeCardPlus3: "Next 3 cards",
     modeQuartets: "Quartets",
     modeAcaan: "ACAAN",
     modeCyclic: "Cyclic stacks",
@@ -132,7 +132,7 @@ export const en = {
 
   statsPage: {
     lead:
-      "Only the stacks you have trained appear here. Basic and Card +3 are tracked separately.",
+      "Only the stacks you have trained appear here. Basic and Next 3 cards are tracked separately.",
     dataActions: "Backup and reset",
     stackSelectLabel: "Stack",
     modeTabsLabel: "Mode",
@@ -188,19 +188,9 @@ export const en = {
     languageOption: (name: string, current: boolean) =>
       current ? `${name} — current` : name,
     reinforcement: "Reinforcement",
-    reinforcementToggle: "Turn on reinforcement",
     reinforcementHint:
       "Cards you miss come back more often until you answer them correctly five times in a row.",
-    reinforcementSummary: (stack: string, mode: string) =>
-      `Reinforcement list: ${stack} · ${mode}`,
-    reinforcementCount: (count: number) =>
-      count === 1
-        ? "1 card is waiting for reinforcement."
-        : `${count} cards are waiting for reinforcement.`,
-    reinforcementEmpty:
-      "No cards are waiting for reinforcement. A missed card joins the list after it is graded.",
     accelerate: "Accelerate",
-    accelerateToggle: "Turn on Accelerate",
     accelerateHint:
       "Cards that take longer than your threshold come back more often.",
     accelerateThreshold: "Slow card threshold",
@@ -217,9 +207,6 @@ export const en = {
         ? "1 card is above this threshold."
         : `${count} cards are above this threshold.`,
     endless: "Endless",
-    endlessToggle: "Turn on Endless",
-    endlessHint:
-      "Keep training in batches of two shuffled passes until you quit. A missed card or slow card still gets extra prompts.",
   },
 
   backup: {
@@ -355,7 +342,7 @@ export const en = {
     sections: [
       {
         title: "1. Choose a stack, direction, and mode",
-        body: "Pick the stack you want to train. Position → card asks for the card at a position. Card → position asks for the position of a card. Mixed chooses a direction for each prompt. Basic asks one answer. Card +3 asks for the three cards after the front card, wrapping from position 52 back to 1.",
+        body: "Pick the stack you want to train. Position → card asks for the card at a position. Card → position asks for the position of a card. Mixed chooses a direction for each prompt. Basic asks one answer. Next 3 cards asks for the three cards after the front card, wrapping from position 52 back to 1.",
       },
       {
         title: "2. Recall, then reveal",

@@ -5,7 +5,7 @@
 
 ## Context
 
-v1 stored one stats record per stack (`stats[stackId]`). The v2 features need Basic and Card +3 tracked separately, per-card metrics for a new Stats table, and reinforcement state. Training and settings features depend on the shared schema, so it must change once, safely, without losing existing progress.
+v1 stored one stats record per stack (`stats[stackId]`). The v2 features need Basic and Next 3 cards tracked separately, per-card metrics for a new Stats table, and reinforcement state. Training and settings features depend on the shared schema, so it must change once, safely, without losing existing progress.
 
 ## Decision
 
@@ -20,7 +20,7 @@ v1 stored one stats record per stack (`stats[stackId]`). The v2 features need Ba
 
 ## Consequences
 
-- Basic progress survives the update; Card +3 starts empty after migration.
+- Basic progress survives the update; Next 3 cards starts empty after migration.
 - Per-card metrics and reinforcement are available to the Stats table and to reinforcement training without another schema change.
 - Backups remain portable: old v1 files restore and migrate; newer files are refused.
 - The stored payload is larger (52 per-card records per practiced mode), but still small for `localStorage`.

@@ -6,13 +6,13 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Open Stacks Trainer** — a free, static, browser-only trainer for memorized card stacks. No accounts, no server, no spaced repetition.
 
-**Mode** — the training variant whose stats are tracked separately. v2 modes are **Basic** and **Card +3**. Stats are keyed by stack ID and then by mode. Endless is a session modifier, not a mode: it counts toward the active mode.
+**Mode** — the training variant whose stats are tracked separately. v2 modes are **Basic** and **Next 3 cards**. Stats are keyed by stack ID and then by mode. Endless is a session modifier, not a mode: it counts toward the active mode.
 
 **Basic mode** — one shuffled pass through all 52 positions, one prompt at a time, self-graded after reveal. The v1 mode and the v2 default.
 
-**Card +3 mode** — one 52-item pass. The front follows the direction: a position or a card. The back is always the next three cards after the front card’s position, wrapping 52 → 1. One grade covers the triple. Only the front card updates per-card stats.
+**Next 3 cards mode** — one 52-item pass. The internal mode value stays `card-plus-3`. The front follows the direction: a position or a card. The back is always the next three cards after the front card’s position, wrapping 52 → 1. One grade covers the triple. Only the front card updates per-card stats.
 
-**Endless** — a modifier, not a mode. A batch has 104 regular items: two independent shuffled passes of all 52 positions. A fresh batch starts without a summary until the user quits. Stats go to the active Basic or Card +3 record, and the screen shows “Answered N.”
+**Endless** — a modifier, not a mode. A batch has 104 regular items: two independent shuffled passes of all 52 positions. A fresh batch starts without a summary until the user quits. Stats go to the active Basic or Next 3 cards record, and the screen shows “Answered N.”
 
 **Future modes** — Quartets (Pit Hartling) and ACAAN are later modes. Cyclic stacks need a different model and are out of scope.
 
@@ -43,13 +43,13 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 - `card-to-position` — front is the card, back is the position.
 - `mixed` — each session item gets a direction at random, 50/50, fixed for that item.
 
-**Session** — one training run. Basic and Card +3 normally cover one shuffled pass of all 52 positions, with no repeats. An Endless session continues in 104-item batches until quit. Use “session,” not “round” or “quiz.”
+**Session** — one training run. Basic and Next 3 cards normally cover one shuffled pass of all 52 positions, with no repeats. An Endless session continues in 104-item batches until quit. Use “session,” not “round” or “quiz.”
 
 **Item** — one position/card pair inside a session, with its position, card, and direction.
 
 **Extra prompt** — a scheduled Reinforcement or Accelerate prompt inserted between regular items. It uses the active mode and direction, is graded once, and counts in totals, streaks, practice days, recent misses, and per-card stats.
 
-**Planned total** — the regular items plus every scheduled extra prompt. Basic and Card +3 show `answered/total`; Endless shows “Answered N.”
+**Planned total** — the regular items plus every scheduled extra prompt. Basic and Next 3 cards show `answered/total`; Endless shows “Answered N.”
 
 **Front** — the prompt shown before the answer is revealed.
 
@@ -113,7 +113,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Menu** — the main screen: Start training, Stack selector, Direction selector, collapsible Training settings, Mode selector, Stats, My Stacks, then How to use this app and Settings. Footer shows the AI disclosure.
 
-**Training screen** — the active session: progress (`answered/planned total`, or “Answered N” in Endless), current streak, direction label, quiet timer, mode label for Card +3, an optional Reinforcement/Accelerate indicator beside the timer, front, Answer, then Missed/Got it after reveal.
+**Training screen** — the active session: progress (`answered/planned total`, or “Answered N” in Endless), current streak, direction label, quiet timer, mode label for Next 3 cards, an optional Reinforcement/Accelerate indicator beside the timer, front, Answer, then Missed/Got it after reveal.
 
 **Stats page** — stack-focused, per mode: stack selector, mode tabs, per-mode figures, collapsible practice days / recent misses / per-card table, and global backup/restore/delete actions. The table can sort by stack order, Reinforcement, slowest average, most missed, or lowest streak.
 
