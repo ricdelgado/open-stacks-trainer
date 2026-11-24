@@ -133,20 +133,29 @@ export const renderMenu: Screen = (root, context) => {
   modeGroup.append(modeLegend);
   const modeList = el("div", "mode-list");
 
-  const basic = el("label", "mode-option");
-  const basicInput = el("input");
-  basicInput.type = "radio";
-  basicInput.name = "mode";
-  basicInput.value = "basic";
-  basicInput.checked = true;
-  const basicText = el("span", "mode-option__name", strings.menu.modeBasic);
-  basic.append(basicInput, basicText);
-  modeList.append(basic);
+  const basicChoice = [
+    { value: "basic", label: strings.menu.modeBasic },
+    { value: "card-plus-3", label: strings.menu.modeCardPlus3 },
+  ] as const;
+
+  for (const choice of basicChoice) {
+    const option = el("label", "mode-option");
+    const input = el("input");
+    input.type = "radio";
+    input.name = "mode";
+    input.value = choice.value;
+    input.checked = context.state.settings.mode === choice.value;
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      applySettings({ mode: choice.value });
+    });
+    option.append(input, el("span", "mode-option__name", choice.label));
+    modeList.append(option);
+  }
 
   const futureModes: readonly string[] = [
     strings.menu.modeQuartets,
     strings.menu.modeAcaan,
-    strings.menu.modeEndless,
     strings.menu.modeCyclic,
   ];
 

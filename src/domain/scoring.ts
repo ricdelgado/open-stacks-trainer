@@ -1,4 +1,4 @@
-import type { CardStats, Mode, ModeStats } from "./types";
+import type { AppState, CardStats, Mode, ModeStats } from "./types";
 import { REINFORCEMENT_CLEAR_STREAK } from "./types";
 import type { ItemDirection } from "./session";
 
@@ -155,6 +155,23 @@ export function averageTenths(
 ): number | null {
   if (count <= 0) return null;
   return totalTenths / count;
+}
+
+export function applyAnswerToState(
+  state: AppState,
+  stackId: string,
+  mode: Mode,
+  answer: AnswerRecord,
+): AppState {
+  const stackModes = state.stats[stackId] ?? {};
+  const stats = applyAnswer(stackId, mode, stackModes[mode], answer);
+  return {
+    ...state,
+    stats: {
+      ...state.stats,
+      [stackId]: { ...stackModes, [mode]: stats },
+    },
+  };
 }
 
 export function averageElapsedTenths(card: CardStats): number | null {

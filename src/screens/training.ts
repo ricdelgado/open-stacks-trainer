@@ -20,6 +20,11 @@ function frontIsPosition(view: TrainingView): boolean {
 }
 
 function answerDescription(view: TrainingView): string {
+  if (view.mode === "card-plus-3") {
+    return (view.item.nextCards ?? [])
+      .map((card) => cardAccessibleLabel(card))
+      .join(", ");
+  }
   return frontIsPosition(view)
     ? cardAccessibleLabel(view.item.card)
     : strings.training.positionAccessible(view.item.position);
@@ -49,9 +54,10 @@ export const renderTraining: Screen = (root, context) => {
   progress.setAttribute("aria-live", "polite");
   const streak = el("p", "training-streak");
   const direction = el("p", "training-direction");
+  const modeLabel = el("p", "training-mode");
   const timerText = el("p", "training-timer");
   timerText.setAttribute("aria-hidden", "true");
-  stats.append(progress, streak, direction, timerText);
+  stats.append(progress, streak, direction, modeLabel, timerText);
 
   const updateTimerText = (): void => {
     timerText.textContent = strings.training.timerSeconds(timer.displaySeconds);
@@ -79,6 +85,9 @@ export const renderTraining: Screen = (root, context) => {
     );
     streak.textContent = strings.training.streak(view.persistedStreak);
     direction.textContent = strings.directions[view.item.direction];
+    modeLabel.textContent =
+      view.mode === "card-plus-3" ? strings.menu.modeCardPlus3 : "";
+    modeLabel.hidden = view.mode !== "card-plus-3";
     live.textContent = view.revealed
       ? strings.training.revealWithTime(
           answerDescription(view),
@@ -108,18 +117,29 @@ export const renderTraining: Screen = (root, context) => {
 
     if (view.revealed) {
       const backSide = el("div", "prompt-side prompt-side--answer");
-      backSide.append(
-        el(
-          "p",
-          "prompt-side__label",
+      if (view.mode === "card-plus-3") {
+        backSide.append(
+          el("p", "prompt-side__label", strings.training.nextThreeLabel),
+        );
+        const triple = el("div", "card-triple");
+        for (const card of view.item.nextCards ?? []) {
+          triple.append(createCardFace(card, "small"));
+        }
+        backSide.append(triple);
+      } else {
+        backSide.append(
+          el(
+            "p",
+            "prompt-side__label",
+            frontIsPosition(view)
+              ? strings.training.cardLabel
+              : strings.training.positionLabel,
+          ),
           frontIsPosition(view)
-            ? strings.training.cardLabel
-            : strings.training.positionLabel,
-        ),
-        frontIsPosition(view)
-          ? createCardFace(view.item.card, "large")
-          : createPositionFace(view.item.position),
-      );
+            ? createCardFace(view.item.card, "large")
+            : createPositionFace(view.item.position),
+        );
+      }
       pair.append(backSide);
     }
 

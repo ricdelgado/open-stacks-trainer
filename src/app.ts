@@ -1,8 +1,8 @@
 import { builtInStacks, getBuiltInStack } from "./data/stacks";
-import { applyAnswer, type SessionProgress } from "./domain/scoring";
+import { applyAnswerToState, type SessionProgress } from "./domain/scoring";
 import { generateSession, type GeneratedSession } from "./domain/session";
 import { withSettings } from "./domain/settings";
-import type { AppState, Direction } from "./domain/types";
+import type { AppState, Direction, Mode } from "./domain/types";
 import { parseRoute, type Route } from "./router";
 import { renderEditor } from "./screens/editor";
 import { renderImport } from "./screens/import";
@@ -187,13 +187,17 @@ export function startApp(appRoot: HTMLElement): void {
     return null;
   };
 
-  const beginSession = (stackId: string, direction: Direction): boolean => {
+  const beginSession = (
+    stackId: string,
+    direction: Direction,
+    mode: Mode,
+  ): boolean => {
     const stack = findSessionStack(stackId);
     if (!stack) return false;
 
     let generated: GeneratedSession;
     try {
-      generated = generateSession({ ...stack, direction });
+      generated = generateSession({ ...stack, direction, mode });
     } catch {
       return false;
     }
@@ -206,9 +210,10 @@ export function startApp(appRoot: HTMLElement): void {
 
   const startSession = (): void => {
     const direction = state.settings.direction;
-    if (beginSession(state.settings.selectedStackId, direction)) return;
+    const mode = state.settings.mode;
+    if (beginSession(state.settings.selectedStackId, direction, mode)) return;
     const firstStack = builtInStacks[0];
-    if (firstStack) beginSession(firstStack.id, direction);
+    if (firstStack) beginSession(firstStack.id, direction, mode);
   };
 
   appRoot.classList.add("app");
@@ -342,6 +347,7 @@ export function startApp(appRoot: HTMLElement): void {
         beginSession(
           completedSession.generated.stackId,
           completedSession.generated.direction,
+          completedSession.generated.mode,
         );
       },
       quitSession() {
@@ -364,9 +370,8 @@ export function startApp(appRoot: HTMLElement): void {
         if (!graded) return null;
 
         const stackId = runner.generated.stackId;
-        const mode = state.settings.mode;
-        const stackModes = state.stats[stackId] ?? {};
-        const stats = applyAnswer(stackId, mode, stackModes[mode], {
+        const mode = runner.generated.mode;
+        const nextState = applyAnswerToState(state, stackId, mode, {
           card: item.card,
           position: item.position,
           direction: item.direction,
@@ -374,13 +379,9 @@ export function startApp(appRoot: HTMLElement): void {
           at,
           elapsedTenths: timedTenths,
         });
-        const save = persistState({
-          ...state,
-          stats: {
-            ...state.stats,
-            [stackId]: { ...stackModes, [mode]: stats },
-          },
-        });
+        const persistedStreak =
+          nextState.stats[stackId]?.[mode]?.currentStreak ?? 0;
+        const save = persistState(nextState);
 
         const complete = runner.isComplete;
         if (complete) {
@@ -399,7 +400,7 @@ export function startApp(appRoot: HTMLElement): void {
           complete,
           save,
           progress: graded.progress,
-          persistedStreak: stats.currentStreak,
+          persistedStreak,
         };
       },
       getTrainingView() {
@@ -410,12 +411,13 @@ export function startApp(appRoot: HTMLElement): void {
           stackId: runner.generated.stackId,
           stackName: runner.generated.stackName,
           configuredDirection: runner.generated.direction,
+          mode: runner.generated.mode,
           item,
           revealed: runner.revealed,
           answered: runner.progress.answered,
           total: runner.generated.items.length,
           persistedStreak:
-            state.stats[runner.generated.stackId]?.[state.settings.mode]
+            state.stats[runner.generated.stackId]?.[runner.generated.mode]
               ?.currentStreak ?? 0,
           sessionBestRun: runner.progress.bestRun,
         };

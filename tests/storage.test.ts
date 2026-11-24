@@ -59,6 +59,7 @@ describe("app storage", () => {
     store.load();
     const state = createDefaultState("aronson");
     state.settings.direction = "card-to-position";
+    state.settings.mode = "card-plus-3";
 
     expect(store.save(state)).toEqual({ ok: true });
     expect(new AppStore(storage).load().state).toEqual(state);

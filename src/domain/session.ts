@@ -1,5 +1,5 @@
 import { isCardCode } from "./cards";
-import type { Direction } from "./types";
+import type { Direction, Mode } from "./types";
 
 export type Rng = () => number;
 export type ItemDirection = Exclude<Direction, "mixed">;
@@ -8,12 +8,14 @@ export interface SessionItem {
   position: number;
   card: string;
   direction: ItemDirection;
+  nextCards?: readonly string[];
 }
 
 export interface GeneratedSession {
   stackId: string;
   stackName: string;
   direction: Direction;
+  mode: Mode;
   items: readonly SessionItem[];
 }
 
@@ -22,6 +24,7 @@ export interface GenerateSessionOptions {
   stackName: string;
   order: readonly string[];
   direction: Direction;
+  mode?: Mode;
   random?: Rng;
 }
 
@@ -52,11 +55,21 @@ function assertValidOrder(order: readonly string[]): void {
   }
 }
 
+function cardAt(order: readonly string[], index: number): string {
+  const wrapped = ((index % 52) + 52) % 52;
+  const card = order[wrapped];
+  if (card === undefined) {
+    throw new Error(`Missing card at stack index ${wrapped}.`);
+  }
+  return card;
+}
+
 export function generateSession({
   stackId,
   stackName,
   order,
   direction,
+  mode = "basic",
   random = Math.random,
 }: GenerateSessionOptions): GeneratedSession {
   assertValidOrder(order);
@@ -94,12 +107,22 @@ export function generateSession({
       throw new Error("Mixed direction was not generated.");
     }
 
-    return {
+    const item: SessionItem = {
       position,
       card,
       direction: itemDirection,
     };
+
+    if (mode === "card-plus-3") {
+      item.nextCards = [
+        cardAt(order, position),
+        cardAt(order, position + 1),
+        cardAt(order, position + 2),
+      ];
+    }
+
+    return item;
   });
 
-  return { stackId, stackName, direction, items };
+  return { stackId, stackName, direction, mode, items };
 }

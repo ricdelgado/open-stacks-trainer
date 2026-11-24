@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   accuracyPercent,
   applyAnswer,
+  applyAnswerToState,
   applySessionAnswer,
   averageElapsedTenths,
   createSessionProgress,
@@ -234,6 +235,23 @@ describe("stats scoring", () => {
     expect(
       averageElapsedTenths({ ...emptyCardStats(), elapsedTenths: 30, correctTimedAnswers: 3 }),
     ).toBe(10);
+  });
+
+  it("keeps Basic and Card +3 stats separate for the same stack", () => {
+    let state = createDefaultState();
+    state = applyAnswerToState(state, "mnemonica", "basic", answer());
+    state = applyAnswerToState(
+      state,
+      "mnemonica",
+      "card-plus-3",
+      answer({ card: "QC", position: 13 }),
+    );
+
+    expect(state.stats.mnemonica?.basic?.totalAnswered).toBe(1);
+    expect(state.stats.mnemonica?.["card-plus-3"]?.totalAnswered).toBe(1);
+    expect(state.stats.mnemonica?.basic?.cards["7D"]).toBeDefined();
+    expect(state.stats.mnemonica?.["card-plus-3"]?.cards["QC"]).toBeDefined();
+    expect(state.stats.mnemonica?.basic?.cards["QC"]).toBeUndefined();
   });
 
   it("persists graded stats through storage immediately", () => {

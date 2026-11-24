@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getBuiltInStack } from "../src/data/stacks";
 import { generateSession, type Rng } from "../src/domain/session";
+import type { Direction } from "../src/domain/types";
 
 function order(): readonly string[] {
   const stack = getBuiltInStack("mnemonica");
@@ -109,5 +110,66 @@ describe("session generation", () => {
         direction: "mixed",
       }),
     ).toThrow("52 cards");
+  });
+});
+
+describe("Card +3 session generation", () => {
+  function cardPlus3(direction: Direction = "position-to-card") {
+    return generateSession({
+      stackId: "mnemonica",
+      stackName: "Mnemonica",
+      order: order(),
+      direction,
+      mode: "card-plus-3",
+      random: seededRandom(3),
+    });
+  }
+
+  it("runs one 52-item pass with three answer cards per item", () => {
+    const session = cardPlus3();
+    expect(session.mode).toBe("card-plus-3");
+    expect(session.items).toHaveLength(52);
+    expect(new Set(session.items.map((item) => item.position)).size).toBe(52);
+    expect(
+      session.items.every((item) => item.nextCards?.length === 3),
+    ).toBe(true);
+  });
+
+  it("puts the next three cards after each position and wraps 52 to 1", () => {
+    const stack = order();
+    const byPosition = new Map(
+      cardPlus3().items.map((item) => [item.position, item]),
+    );
+
+    const expectedNext = (position: number) => [
+      stack[position % 52],
+      stack[(position + 1) % 52],
+      stack[(position + 2) % 52],
+    ];
+
+    for (const position of [1, 2, 49, 50, 51, 52]) {
+      expect(byPosition.get(position)?.nextCards).toEqual(
+        expectedNext(position),
+      );
+    }
+  });
+
+  it("keeps the direction as the front and always uses card backs", () => {
+    const forward = cardPlus3("position-to-card");
+    const reverse = cardPlus3("card-to-position");
+    const mixed = cardPlus3("mixed");
+
+    expect(
+      forward.items.every((item) => item.direction === "position-to-card"),
+    ).toBe(true);
+    expect(
+      reverse.items.every((item) => item.direction === "card-to-position"),
+    ).toBe(true);
+    expect(
+      mixed.items.filter((item) => item.direction === "position-to-card"),
+    ).toHaveLength(26);
+    expect(
+      mixed.items.filter((item) => item.direction === "card-to-position"),
+    ).toHaveLength(26);
   });
 });

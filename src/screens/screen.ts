@@ -4,6 +4,7 @@ import type {
   AppState,
   CustomStack,
   Direction,
+  Mode,
   Settings,
 } from "../domain/types";
 import type {
@@ -23,6 +24,7 @@ export interface TrainingView {
   stackId: string;
   stackName: string;
   configuredDirection: Direction;
+  mode: Mode;
   item: SessionItem;
   revealed: boolean;
   answered: number;

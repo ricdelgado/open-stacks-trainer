@@ -26,6 +26,7 @@ export const strings = {
     directionLabel: "Direction",
     modeLabel: "Mode",
     modeBasic: "Basic",
+    modeCardPlus3: "Card +3",
     modeQuartets: "Quartets",
     modeAcaan: "ACAAN",
     modeEndless: "Endless",
@@ -97,6 +98,7 @@ export const strings = {
     streak: (current: number) => `Streak ${current}`,
     positionLabel: "Position",
     cardLabel: "Card",
+    nextThreeLabel: "Next three cards",
     positionAccessible: (position: number) => `Position ${position}`,
     revealAnnouncement: (answer: string) => `Answer: ${answer}`,
     revealWithTime: (answer: string, seconds: number) =>

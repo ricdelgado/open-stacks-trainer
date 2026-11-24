@@ -555,14 +555,39 @@ p {
 
 .training-streak,
 .training-direction,
+.training-mode,
 .training-timer {
   color: var(--muted);
   font-size: 0.85rem;
 }
 
+.training-mode {
+  font-weight: 650;
+}
+
 .training-timer {
   min-width: 2.5em;
   font-variant-numeric: tabular-nums;
+}
+
+.card-triple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.card-triple .card-face--small {
+  min-width: 2.9rem;
+  min-height: 3.8rem;
+}
+
+.card-triple .card-face--small .card-face__rank {
+  font-size: 1.1rem;
+}
+
+.card-triple .card-face--small .card-face__suit {
+  font-size: 1.15rem;
 }
 
 .training-play:focus-visible {
