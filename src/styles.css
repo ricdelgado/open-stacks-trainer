@@ -97,6 +97,59 @@ p {
   margin-top: 1rem;
 }
 
+.menu-settings {
+  margin-top: 1rem;
+}
+
+.screen--settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-back {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+}
+
+.settings-list {
+  margin-top: 1.35rem;
+}
+
+.training-settings {
+  margin-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.training-settings__summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.training-settings__summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.training-settings__body .field:first-child {
+  margin-top: 0.75rem;
+}
+
+.language-list {
+  margin-top: 0.9rem;
+}
+
+.language-option {
+  justify-content: flex-start;
+}
+
+.settings-list .field__label {
+  margin-bottom: 0.45rem;
+}
+
 .menu-title,
 .screen-title {
   font-size: clamp(2rem, 9vw, 2.85rem);
@@ -556,7 +609,8 @@ p {
 .training-streak,
 .training-direction,
 .training-mode,
-.training-timer {
+.training-timer,
+.training-insert {
   color: var(--muted);
   font-size: 0.85rem;
 }
@@ -913,6 +967,121 @@ p {
   font-size: 0.76rem;
   line-height: 1.35;
 }
+
+.stats-cards {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.stats-cards__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.stats-cards .stats-subtitle {
+  margin-top: 0;
+}
+
+.stats-section__toggle {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.stats-section__toggle:hover {
+  color: var(--accent-strong);
+}
+
+.stats-section__toggle:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.stats-section__marker::before {
+  content: "▸";
+  font-size: 0.8rem;
+}
+
+.stats-section__toggle[aria-expanded="true"] .stats-section__marker::before {
+  content: "▾";
+}
+
+.stats-section__body {
+  padding-top: 0.15rem;
+}
+
+.stats-cards__lead {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.stats-sort {
+  min-width: 12rem;
+  margin-top: 0;
+}
+
+.stats-sort .field__label {
+  margin-bottom: 0.25rem;
+  font-size: 0.72rem;
+}
+
+.stats-table-scroll {
+  margin-top: 0.9rem;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.stats-table th {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stats-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.stats-card-row:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
 
 .stats-delete {
   margin-top: 1rem;
@@ -1421,6 +1590,79 @@ p {
 
   .prompt-pair {
     gap: 1.8rem;
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .stats-cards {
+    padding: 0.85rem;
+  }
+
+  .stats-cards__head {
+    display: block;
+  }
+
+  .stats-sort {
+    margin-top: 0.75rem;
+  }
+
+  .stats-table thead {
+    display: none;
+  }
+
+  .stats-table,
+  .stats-table tbody {
+    display: block;
+  }
+
+  .stats-table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.3rem 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stats-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .stats-table td {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.1rem;
+    padding: 0;
+    border: 0;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+
+  .stats-table td::before {
+    content: attr(data-label);
+    display: block;
+    width: 100%;
+    color: var(--muted);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .stats-table .card-face--small {
+    min-width: 1.6rem;
+    min-height: 2.1rem;
+    padding: 0.1rem 0.25rem;
+  }
+
+  .stats-table .card-face--small .card-face__rank {
+    font-size: 0.72rem;
+  }
+
+  .stats-table .card-face--small .card-face__suit {
+    font-size: 0.78rem;
   }
 }
 

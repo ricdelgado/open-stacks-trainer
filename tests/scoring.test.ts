@@ -203,6 +203,31 @@ describe("stats scoring", () => {
     });
   });
 
+  it("resets the card streak on a miss and keeps it in reinforcement", () => {
+    const previous: ModeStats = {
+      ...emptyStats("mnemonica"),
+      cards: {
+        "7D": {
+          ...emptyCardStats(),
+          currentStreak: 3,
+          inReinforcement: true,
+        },
+      },
+    };
+    const stats = applyAnswer(
+      "mnemonica",
+      "basic",
+      previous,
+      answer({ correct: false }),
+    );
+
+    expect(stats.cards["7D"]).toMatchObject({
+      currentStreak: 0,
+      timesMissed: 1,
+      inReinforcement: true,
+    });
+  });
+
   it("accumulates elapsed time only for correct timed answers", () => {
     let stats = applyAnswer(
       "mnemonica",

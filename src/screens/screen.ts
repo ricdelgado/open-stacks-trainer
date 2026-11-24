@@ -29,6 +29,7 @@ export interface TrainingView {
   revealed: boolean;
   answered: number;
   total: number;
+  endless: boolean;
   persistedStreak: number;
   sessionBestRun: number;
 }

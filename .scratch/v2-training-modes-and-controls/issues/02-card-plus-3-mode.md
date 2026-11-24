@@ -4,7 +4,7 @@
 
 **Blocked by:** `v2-per-card-stats/01 — Storage schema v2 and mode-split stats`; `01 — Timer, elapsed capture, and session average`.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] The mode selector enables Basic and Card +3; future modes stay disabled with “later”.
 - [x] The selected mode is saved in settings and restored; default is Basic.
@@ -37,3 +37,8 @@
 - `node scripts/verify-stacks.mjs` — pass
 
 Awaiting human check in the browser before commit.
+
+## Comments
+
+- Human confirmed shipped. Commit `9c2e497` is on `origin/main` and included in the
+  live Pages build. Ticket resolved.

@@ -1,14 +1,19 @@
+import { planAccelerateInserts } from "./accelerate";
 import { isCardCode } from "./cards";
+import type { InsertPlan } from "./inserts";
+import { planReinforcementInserts } from "./reinforcement";
 import type { Direction, Mode } from "./types";
 
 export type Rng = () => number;
 export type ItemDirection = Exclude<Direction, "mixed">;
+export type InsertKind = "reinforcement" | "accelerate";
 
 export interface SessionItem {
   position: number;
   card: string;
   direction: ItemDirection;
   nextCards?: readonly string[];
+  insert?: InsertKind;
 }
 
 export interface GeneratedSession {
@@ -25,7 +30,13 @@ export interface GenerateSessionOptions {
   order: readonly string[];
   direction: Direction;
   mode?: Mode;
+  reinforcementCandidates?: readonly string[];
+  accelerateCandidates?: readonly string[];
   random?: Rng;
+}
+
+export interface GenerateEndlessBatchOptions extends GenerateSessionOptions {
+  previousFrontCard?: string | null;
 }
 
 export function shuffle<T>(values: readonly T[], random: Rng): T[] {
@@ -64,36 +75,62 @@ function cardAt(order: readonly string[], index: number): string {
   return card;
 }
 
-export function generateSession({
-  stackId,
-  stackName,
-  order,
-  direction,
-  mode = "basic",
-  random = Math.random,
-}: GenerateSessionOptions): GeneratedSession {
-  assertValidOrder(order);
-
-  const positions = Array.from({ length: 52 }, (_, index) => index + 1);
-  const shuffledPositions = shuffle(positions, random);
-
-  let directions: readonly ItemDirection[] | null = null;
-  if (direction === "mixed") {
-    directions = shuffle(
-      [
-        ...Array<ItemDirection>(26).fill("position-to-card"),
-        ...Array<ItemDirection>(26).fill("card-to-position"),
-      ],
-      random,
-    );
+function buildItem(
+  order: readonly string[],
+  position: number,
+  itemDirection: ItemDirection,
+  mode: Mode,
+  insert?: InsertKind,
+): SessionItem {
+  const card = order[position - 1];
+  if (card === undefined) {
+    throw new Error(`Missing card at position ${position}.`);
   }
 
-  const items = shuffledPositions.map((position, index): SessionItem => {
-    const card = order[position - 1];
-    if (card === undefined) {
-      throw new Error(`Missing card at position ${position}.`);
-    }
+  const item: SessionItem = {
+    position,
+    card,
+    direction: itemDirection,
+  };
 
+  if (mode === "card-plus-3") {
+    item.nextCards = [
+      cardAt(order, position),
+      cardAt(order, position + 1),
+      cardAt(order, position + 2),
+    ];
+  }
+
+  if (insert) item.insert = insert;
+
+  return item;
+}
+
+function insertDirection(direction: Direction, random: Rng): ItemDirection {
+  if (direction !== "mixed") return direction;
+  return random() < 0.5 ? "position-to-card" : "card-to-position";
+}
+
+function mixedDirections(random: Rng): ItemDirection[] {
+  return shuffle(
+    [
+      ...Array<ItemDirection>(26).fill("position-to-card"),
+      ...Array<ItemDirection>(26).fill("card-to-position"),
+    ],
+    random,
+  );
+}
+
+function buildRegularItems(
+  order: readonly string[],
+  positions: readonly number[],
+  direction: Direction,
+  mode: Mode,
+  random: Rng,
+): SessionItem[] {
+  const directions = direction === "mixed" ? mixedDirections(random) : null;
+
+  return positions.map((position, index): SessionItem => {
     let itemDirection: ItemDirection;
     if (directions) {
       const mixedDirection = directions[index];
@@ -107,21 +144,223 @@ export function generateSession({
       throw new Error("Mixed direction was not generated.");
     }
 
-    const item: SessionItem = {
-      position,
-      card,
-      direction: itemDirection,
-    };
+    return buildItem(order, position, itemDirection, mode);
+  });
+}
 
-    if (mode === "card-plus-3") {
-      item.nextCards = [
-        cardAt(order, position),
-        cardAt(order, position + 1),
-        cardAt(order, position + 2),
-      ];
+function swapFirstTwo(items: SessionItem[]): void {
+  const first = items[0];
+  const second = items[1];
+  if (!first || !second) return;
+  items[0] = second;
+  items[1] = first;
+}
+
+function chooseAdjacentSafeCard(
+  planned: string,
+  pool: readonly string[],
+  avoid: ReadonlySet<string>,
+): string {
+  if (!avoid.has(planned)) return planned;
+  return pool.find((card) => !avoid.has(card)) ?? planned;
+}
+
+interface ApplyInsertsOptions {
+  regularItems: readonly SessionItem[];
+  order: readonly string[];
+  direction: Direction;
+  mode: Mode;
+  random: Rng;
+  reinforcementCandidates: readonly string[];
+  accelerateCandidates: readonly string[];
+  avoidAdjacent?: boolean;
+}
+
+function applyInserts({
+  regularItems,
+  order,
+  direction,
+  mode,
+  random,
+  reinforcementCandidates,
+  accelerateCandidates,
+  avoidAdjacent = false,
+}: ApplyInsertsOptions): SessionItem[] {
+  const knownCards = new Set(order);
+  const knownCandidates = (candidates: readonly string[]) =>
+    candidates.filter((card) => knownCards.has(card));
+
+  const reinforcementPool = knownCandidates(reinforcementCandidates);
+  const acceleratePool = knownCandidates(accelerateCandidates);
+
+  const reinforcementInserts = planReinforcementInserts({
+    candidates: reinforcementPool,
+    regularCount: regularItems.length,
+    random,
+  });
+  const accelerateInserts = planAccelerateInserts({
+    candidates: acceleratePool,
+    regularCount: regularItems.length,
+    random,
+  });
+
+  const items: SessionItem[] = [];
+  const reinforcementCursor = { value: 0 };
+  const accelerateCursor = { value: 0 };
+
+  const pushDueInserts = (
+    plans: readonly InsertPlan[],
+    cursor: { value: number },
+    kind: InsertKind,
+    pool: readonly string[],
+    regularsSeen: number,
+    nextRegularCard: string | undefined,
+  ): void => {
+    while (
+      cursor.value < plans.length &&
+      plans[cursor.value]?.afterRegular === regularsSeen
+    ) {
+      const insert = plans[cursor.value];
+      if (!insert) break;
+
+      let card = insert.card;
+      if (avoidAdjacent) {
+        const previousCard = items.at(-1)?.card;
+        const avoid = new Set<string>();
+        if (previousCard !== undefined) avoid.add(previousCard);
+        if (nextRegularCard !== undefined) avoid.add(nextRegularCard);
+        card = chooseAdjacentSafeCard(card, pool, avoid);
+      }
+
+      const position = order.indexOf(card) + 1;
+      items.push(
+        buildItem(
+          order,
+          position,
+          insertDirection(direction, random),
+          mode,
+          kind,
+        ),
+      );
+      cursor.value += 1;
     }
+  };
 
-    return item;
+  for (let index = 0; index < regularItems.length; index += 1) {
+    const regularItem = regularItems[index];
+    if (!regularItem) {
+      throw new Error(`Missing regular item ${index}.`);
+    }
+    items.push(regularItem);
+
+    const regularsSeen = index + 1;
+    const nextRegularCard = regularItems[index + 1]?.card;
+    pushDueInserts(
+      reinforcementInserts,
+      reinforcementCursor,
+      "reinforcement",
+      reinforcementPool,
+      regularsSeen,
+      nextRegularCard,
+    );
+    pushDueInserts(
+      accelerateInserts,
+      accelerateCursor,
+      "accelerate",
+      acceleratePool,
+      regularsSeen,
+      nextRegularCard,
+    );
+  }
+
+  return items;
+}
+
+export function generateSession({
+  stackId,
+  stackName,
+  order,
+  direction,
+  mode = "basic",
+  reinforcementCandidates = [],
+  accelerateCandidates = [],
+  random = Math.random,
+}: GenerateSessionOptions): GeneratedSession {
+  assertValidOrder(order);
+
+  const positions = Array.from({ length: 52 }, (_, index) => index + 1);
+  const regularItems = buildRegularItems(
+    order,
+    shuffle(positions, random),
+    direction,
+    mode,
+    random,
+  );
+
+  const items = applyInserts({
+    regularItems,
+    order,
+    direction,
+    mode,
+    random,
+    reinforcementCandidates,
+    accelerateCandidates,
+  });
+
+  return { stackId, stackName, direction, mode, items };
+}
+
+export function generateEndlessBatch({
+  stackId,
+  stackName,
+  order,
+  direction,
+  mode = "basic",
+  reinforcementCandidates = [],
+  accelerateCandidates = [],
+  previousFrontCard = null,
+  random = Math.random,
+}: GenerateEndlessBatchOptions): GeneratedSession {
+  assertValidOrder(order);
+
+  const positions = Array.from({ length: 52 }, (_, index) => index + 1);
+  const firstPass = buildRegularItems(
+    order,
+    shuffle(positions, random),
+    direction,
+    mode,
+    random,
+  );
+  const secondPass = buildRegularItems(
+    order,
+    shuffle(positions, random),
+    direction,
+    mode,
+    random,
+  );
+
+  if (firstPass.at(-1)?.card === secondPass[0]?.card) {
+    swapFirstTwo(secondPass);
+  }
+
+  const regularItems = [...firstPass, ...secondPass];
+
+  if (
+    previousFrontCard !== null &&
+    regularItems[0]?.card === previousFrontCard
+  ) {
+    swapFirstTwo(regularItems);
+  }
+
+  const items = applyInserts({
+    regularItems,
+    order,
+    direction,
+    mode,
+    random,
+    reinforcementCandidates,
+    accelerateCandidates,
+    avoidAdjacent: true,
   });
 
   return { stackId, stackName, direction, mode, items };

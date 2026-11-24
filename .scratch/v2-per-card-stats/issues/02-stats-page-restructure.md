@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Storage schema v2 and mode-split stats; `v2-training-modes-and-controls/02 — Card +3 mode`.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] The page order is: title → subtitle → **Back to menu** → stack selector → mode tabs → stack data → **Delete training data** → per-card table area → **Export my data**, **Restore from file**, **Delete all data** → **Back to menu** again.
 - [x] The first **Back to menu** is the first clickable element after the title and subtitle.
@@ -41,3 +41,9 @@
 - `node scripts/verify-stacks.mjs` — pass
 
 Awaiting human check in the browser before commit.
+
+## Comments
+
+- Human confirmed shipped. Commit `92f4ea3` is on `origin/main`; Pages deploy run
+  `45301430232` succeeded. The live app shows the stack-focused Stats page.
+  Ticket resolved.

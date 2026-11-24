@@ -1,6 +1,11 @@
 import { builtInStacks, getBuiltInStack } from "./data/stacks";
+import { accelerateCandidates } from "./domain/accelerate";
 import { applyAnswerToState, type SessionProgress } from "./domain/scoring";
-import { generateSession, type GeneratedSession } from "./domain/session";
+import {
+  generateEndlessBatch,
+  generateSession,
+  type GeneratedSession,
+} from "./domain/session";
 import { withSettings } from "./domain/settings";
 import { withoutStackStats } from "./domain/stats-selection";
 import type { AppState, Direction, Mode } from "./domain/types";
@@ -17,6 +22,7 @@ import type {
 } from "./screens/screen";
 import { renderStackView } from "./screens/stack-view";
 import { renderStats } from "./screens/stats";
+import { renderSettings, renderSettingsLanguage } from "./screens/settings";
 import { renderSummary } from "./screens/summary";
 import { renderTraining } from "./screens/training";
 import { SessionRunner } from "./session/runner";
@@ -26,7 +32,7 @@ import {
   DEFAULT_STACK_ID,
   type SaveFailureReason,
 } from "./storage/app-store";
-import { strings } from "./strings";
+import { setLanguage, strings } from "./strings";
 import { el, focusMainHeading, link } from "./ui/elements";
 
 interface ScreenDefinition {
@@ -54,6 +60,10 @@ function titleFor(route: Route): string {
       return strings.documentTitles.viewStack;
     case "summary":
       return strings.documentTitles.summary;
+    case "settings":
+      return strings.documentTitles.settings;
+    case "settings-language":
+      return strings.documentTitles.settingsLanguage;
   }
 }
 
@@ -77,6 +87,10 @@ function definitionFor(route: Route): ScreenDefinition {
       return { screen: renderStackView(route.id), title: titleFor(route) };
     case "summary":
       return { screen: renderSummary, title: titleFor(route) };
+    case "settings":
+      return { screen: renderSettings, title: titleFor(route) };
+    case "settings-language":
+      return { screen: renderSettingsLanguage, title: titleFor(route) };
   }
 }
 
@@ -113,6 +127,10 @@ function normalizeHash(route: Route): Route {
       `#/stacks/${encodeURIComponent(route.id)}/view`,
     );
     return { name: "stack-view", id: route.id };
+  }
+
+  if (route.name === "settings" && hash === "#/settings/training") {
+    window.history.replaceState(null, "", "#/settings");
   }
 
   if (
@@ -188,6 +206,43 @@ export function startApp(appRoot: HTMLElement): void {
     return null;
   };
 
+  const sessionCandidates = (
+    stackId: string,
+    mode: Mode,
+  ): {
+    reinforcementCandidates: string[];
+    accelerateCandidates: string[];
+  } => {
+    const modeStats = state.stats[stackId]?.[mode];
+    return {
+      reinforcementCandidates: state.settings.reinforcement
+        ? Object.entries(modeStats?.cards ?? {})
+            .filter(([, card]) => card.inReinforcement)
+            .map(([card]) => card)
+        : [],
+      accelerateCandidates: state.settings.accelerate
+        ? accelerateCandidates(
+            modeStats,
+            state.settings.accelerateThresholdTenths,
+          )
+        : [],
+    };
+  };
+
+  const createBatch = (
+    stack: { stackId: string; stackName: string; order: readonly string[] },
+    direction: Direction,
+    mode: Mode,
+    previousFrontCard?: string,
+  ): GeneratedSession =>
+    generateEndlessBatch({
+      ...stack,
+      direction,
+      mode,
+      ...sessionCandidates(stack.stackId, mode),
+      previousFrontCard,
+    });
+
   const beginSession = (
     stackId: string,
     direction: Direction,
@@ -196,14 +251,41 @@ export function startApp(appRoot: HTMLElement): void {
     const stack = findSessionStack(stackId);
     if (!stack) return false;
 
+    const endless = state.settings.endless;
     let generated: GeneratedSession;
     try {
-      generated = generateSession({ ...stack, direction, mode });
+      generated = endless
+        ? createBatch(stack, direction, mode)
+        : generateSession({
+            ...stack,
+            direction,
+            mode,
+            ...sessionCandidates(stackId, mode),
+          });
     } catch {
       return false;
     }
 
-    activeSession = new SessionRunner(generated);
+    activeSession = new SessionRunner(
+      generated,
+      endless
+        ? {
+            endless: true,
+            nextBatch: (previousFrontCard) => {
+              try {
+                return createBatch(
+                  stack,
+                  direction,
+                  mode,
+                  previousFrontCard,
+                );
+              } catch {
+                return null;
+              }
+            },
+          }
+        : {},
+    );
     completedSession = null;
     go("#/train");
     return true;
@@ -232,6 +314,8 @@ export function startApp(appRoot: HTMLElement): void {
   };
 
   const render = (moveFocus: boolean): void => {
+    setLanguage(state.settings.language);
+
     if (cleanup) {
       cleanup();
       cleanup = null;
@@ -352,6 +436,17 @@ export function startApp(appRoot: HTMLElement): void {
         );
       },
       quitSession() {
+        const runner = activeSession;
+        if (runner?.isEndless) {
+          completedSession = {
+            generated: runner.generated,
+            progress: runner.progress,
+            averageTenths: runner.sessionAverageTenths,
+          };
+          activeSession = null;
+          go("#/summary");
+          return;
+        }
         activeSession = null;
         completedSession = null;
         go("#/");
@@ -417,6 +512,7 @@ export function startApp(appRoot: HTMLElement): void {
           revealed: runner.revealed,
           answered: runner.progress.answered,
           total: runner.generated.items.length,
+          endless: runner.isEndless,
           persistedStreak:
             state.stats[runner.generated.stackId]?.[runner.generated.mode]
               ?.currentStreak ?? 0,

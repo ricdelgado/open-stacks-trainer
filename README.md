@@ -18,11 +18,15 @@ The original design interview and prompt plan were produced by Qwen4-Max High. T
 
 - **Three verified built-in stacks:** Mnemonica, Aronson, Memorandum.
 - **Three directions:** position → card, card → position, or mixed.
-- **One full pass:** a session asks all 52 positions exactly once, in a fresh shuffle.
-- **Self-graded:** reveal the answer, then tap **Got it** or **Missed**. No typing, no timer, no SRS.
-- **Streaks and stats:** current streak, best streak, accuracy, practice days, and the last 20 misses.
+- **Two modes:** **Basic** asks one card or position at a time. **Card +3** asks for the next three cards after the front card, wrapping from position 52 back to 1.
+- **Self-graded with a quiet timer:** reveal the answer, then tap **Got it** or **Missed**. A Got it answer records recall time; no typing, no spaced repetition.
+- **Extra practice:** **Reinforcement** brings missed cards back, **Accelerate** brings slow cards back above a chosen threshold, and **Endless** continues in batches of two shuffled passes until you quit.
+- **Streaks and stats:** current streak, best streak, accuracy, practice days, recent misses, average time, and a per-card table with sorting and reinforcement progress.
+- **Training settings:** a collapsible panel on the menu holds Reinforcement, Accelerate, and Endless; changes save immediately.
+- **Settings:** the app language lives here, with room for more whole-app settings later.
+- **Languages:** English and Português (Brasil) now; Spanish, Italian, and Japanese are next.
 - **Custom stacks:** build one in a phone-friendly grid editor, or paste-import 52 cards. Export and re-import as JSON.
-- **Backup and restore:** export all stats and custom stacks, restore on another browser.
+- **Backup and restore:** export all stats, settings, and custom stacks, restore on another browser.
 - **Private by design:** everything stays in `localStorage`; there are no network requests after the assets load.
 - **Mobile-first:** large tap targets, no horizontal scrolling, light minimal interface, no image assets.
 
@@ -36,7 +40,7 @@ Position 1 is the **top** of the face-down deck; position 52 is the bottom.
 
 Only the published card orders are used. No book text, routines, or diagrams are reproduced. The orders are verified against multiple published sources and protected by checksums; see [`data/SOURCES.md`](data/SOURCES.md).
 
-Si Stebbins is not included in v1 because it is cyclic and needs a different training model.
+Si Stebbins is not included because it is cyclic and needs a different training model.
 
 ## Development
 
@@ -79,7 +83,7 @@ The site is a static build deployed to GitHub Pages by GitHub Actions on every p
 
 ## Roadmap
 
-Not in v1: Quartets, ACAAN, endless mode, cyclic stacks (Si Stebbins), drill-my-misses, Spanish UI, dark mode, duplicate-as-template, PWA/offline install.
+Not yet: Quartets, ACAAN, cyclic stacks (Si Stebbins), drill-my-misses, Spanish, Italian, and Japanese UI, dark mode, duplicate-as-template, PWA/offline install.
 
 ## License
 

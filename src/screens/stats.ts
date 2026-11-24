@@ -6,6 +6,18 @@ import {
   type BackupError,
 } from "../domain/backup";
 import { accuracyPercent } from "../domain/scoring";
+import { DEFAULT_STATS_SECTIONS } from "../domain/settings";
+import {
+  buildCardRows,
+  changeCardTableMode,
+  changeCardTableSort,
+  changeCardTableStack,
+  createCardTableView,
+  isCardSort,
+  sortCardRows,
+  type CardSort,
+  type CardTableView,
+} from "../domain/card-table";
 import {
   defaultSelection,
   mostRecentMode,
@@ -14,9 +26,16 @@ import {
   shouldShowStackSelector,
   type PracticedStack,
 } from "../domain/stats-selection";
-import type { AppState, Mode, ModeStats } from "../domain/types";
-import { strings } from "../strings";
+import {
+  REINFORCEMENT_CLEAR_STREAK,
+  type AppState,
+  type Mode,
+  type ModeStats,
+  type StatsSections,
+} from "../domain/types";
+import { getLocale, strings } from "../strings";
 import { createCardFace } from "../ui/card-face";
+import { cardAccessibleLabel } from "../ui/card-labels";
 import { confirmAction } from "../ui/confirm";
 import { downloadJson } from "../ui/download";
 import { button, el, link, showStatus } from "../ui/elements";
@@ -50,10 +69,22 @@ function describeStack(
 function formatTimestamp(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString(getLocale(), {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+function formatPracticeDay(value: string): string {
+  const parts = value.split("-").map(Number);
+  if (parts.length !== 3) return value;
+  const [year, month, day] = parts;
+  if (year === undefined || month === undefined || day === undefined) {
+    return value;
+  }
+  const date = new Date(year, month - 1, day);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(getLocale(), { dateStyle: "medium" });
 }
 
 function backupErrorMessage(error: BackupError): string {
@@ -75,6 +106,144 @@ function backupErrorMessage(error: BackupError): string {
 
 function modeLabel(mode: Mode): string {
   return mode === "basic" ? strings.menu.modeBasic : strings.menu.modeCardPlus3;
+}
+
+function stackOrderFor(state: AppState, stackId: string): readonly string[] {
+  const builtIn = getBuiltInStack(stackId);
+  if (builtIn) return builtIn.order;
+  return state.customStacks.find((stack) => stack.id === stackId)?.order ?? [];
+}
+
+function formatAverageTime(tenths: number | null): string {
+  if (tenths === null) return strings.summary.emptyValue;
+  const seconds = tenths / 10;
+  const formatted = seconds.toLocaleString(getLocale(), {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  return strings.summary.seconds(formatted);
+}
+
+interface CardTableOptions {
+  order: readonly string[];
+  stats: ModeStats;
+  view: CardTableView;
+  onSortChange(sort: CardSort): void;
+}
+
+function renderCardTable({
+  order,
+  stats,
+  view,
+  onSortChange,
+}: CardTableOptions): HTMLElement {
+  const rows = buildCardRows(order, stats);
+
+  const content = el("div", "stats-cards__content");
+  const head = el("div", "stats-cards__head");
+  const lead = el("p", "stats-cards__lead", strings.statsPage.cardsLead);
+  const titleBlock = el("div");
+  titleBlock.append(lead);
+
+  const sortField = el("div", "field stats-sort");
+  const sortLabel = el("label", "field__label", strings.statsPage.sortLabel);
+  sortLabel.htmlFor = "stats-sort";
+  const sortSelect = el("select", "select");
+  sortSelect.id = "stats-sort";
+  const sortOptions: readonly { value: CardSort; label: string }[] = [
+    { value: "stack-order", label: strings.statsPage.sortStackOrder },
+    { value: "reinforcement", label: strings.statsPage.sortReinforcement },
+    { value: "slowest", label: strings.statsPage.sortSlowest },
+    { value: "most-missed", label: strings.statsPage.sortMostMissed },
+    { value: "lowest-streak", label: strings.statsPage.sortLowestStreak },
+  ];
+  for (const option of sortOptions) {
+    const node = el("option", undefined, option.label);
+    node.value = option.value;
+    sortSelect.append(node);
+  }
+  sortSelect.value = view.sort;
+  sortField.append(sortLabel, sortSelect);
+  head.append(titleBlock, sortField);
+
+  const table = el("table", "stats-table");
+  const thead = el("thead");
+  const headerRow = el("tr");
+  const columns: readonly { label: string }[] = [
+    { label: strings.statsPage.columnPosition },
+    { label: strings.statsPage.columnCard },
+    { label: strings.statsPage.columnStreak },
+    { label: strings.statsPage.columnReinforcement },
+    { label: strings.statsPage.columnTimesMissed },
+    { label: strings.statsPage.columnAverageTime },
+  ];
+  for (const column of columns) {
+    const cell = el("th", undefined, column.label);
+    cell.scope = "col";
+    headerRow.append(cell);
+  }
+  thead.append(headerRow);
+
+  const tbody = el("tbody");
+  const renderRows = (sort: CardSort): void => {
+    tbody.replaceChildren();
+    for (const row of sortCardRows(rows, sort)) {
+      const item = el("tr", "stats-card-row");
+      item.tabIndex = 0;
+      item.setAttribute(
+        "aria-label",
+        strings.statsPage.cardRowLabel(
+          row.position,
+          cardAccessibleLabel(row.card),
+        ),
+      );
+
+      const position = el("td", undefined, String(row.position));
+      position.dataset.label = strings.statsPage.shortPosition;
+
+      const cardCell = el("td");
+      cardCell.dataset.label = strings.statsPage.shortCard;
+      cardCell.append(createCardFace(row.card, "small"));
+
+      const streak = el("td", undefined, String(row.currentStreak));
+      streak.dataset.label = strings.statsPage.shortStreak;
+
+      const reinforcement = el(
+        "td",
+        undefined,
+        row.reinforcementStreak === null
+          ? strings.summary.emptyValue
+          : strings.statsPage.reinforcementProgress(
+              row.reinforcementStreak,
+              REINFORCEMENT_CLEAR_STREAK,
+            ),
+      );
+      reinforcement.dataset.label = strings.statsPage.shortReinforcement;
+
+      const missed = el("td", undefined, String(row.timesMissed));
+      missed.dataset.label = strings.statsPage.shortTimesMissed;
+
+      const average = el("td", undefined, formatAverageTime(row.averageTenths));
+      average.dataset.label = strings.statsPage.shortAverageTime;
+
+      item.append(position, cardCell, streak, reinforcement, missed, average);
+      tbody.append(item);
+    }
+  };
+
+  sortSelect.addEventListener("change", () => {
+    if (!isCardSort(sortSelect.value)) return;
+    onSortChange(sortSelect.value);
+    renderRows(sortSelect.value);
+  });
+
+  table.append(thead, tbody);
+  renderRows(view.sort);
+
+  const scroll = el("div", "stats-table-scroll");
+  scroll.append(table);
+  content.append(head, scroll);
+  return content;
 }
 
 function figure(label: string, value: string): HTMLElement {
@@ -110,14 +279,8 @@ function renderFigures(modeStats: ModeStats): HTMLElement {
 }
 
 function renderPracticeDays(modeStats: ModeStats): HTMLElement {
-  const block = el("div");
-  block.append(
-    el("h3", "stats-subtitle", strings.statsPage.practiceDays),
-  );
-
   if (modeStats.practiceDays.length === 0) {
-    block.append(el("p", "stats-empty", strings.statsPage.noPracticeDays));
-    return block;
+    return el("p", "stats-empty", strings.statsPage.noPracticeDays);
   }
 
   const days = el("ul", "stats-day-list");
@@ -127,7 +290,7 @@ function renderPracticeDays(modeStats: ModeStats): HTMLElement {
   for (const day of sortedDays) {
     const item = el("li", "stats-day");
     item.append(
-      el("span", "stats-day__date", day.date),
+      el("span", "stats-day__date", formatPracticeDay(day.date)),
       el(
         "span",
         "stats-day__counts",
@@ -136,19 +299,12 @@ function renderPracticeDays(modeStats: ModeStats): HTMLElement {
     );
     days.append(item);
   }
-  block.append(days);
-  return block;
+  return days;
 }
 
 function renderMisses(modeStats: ModeStats): HTMLElement {
-  const block = el("div");
-  block.append(
-    el("h3", "stats-subtitle", strings.statsPage.recentMisses),
-  );
-
   if (modeStats.recentMisses.length === 0) {
-    block.append(el("p", "stats-empty", strings.statsPage.noMisses));
-    return block;
+    return el("p", "stats-empty", strings.statsPage.noMisses);
   }
 
   const misses = el("ul", "stats-miss-list");
@@ -169,8 +325,44 @@ function renderMisses(modeStats: ModeStats): HTMLElement {
     item.append(createCardFace(miss.card, "small"), details);
     misses.append(item);
   }
-  block.append(misses);
-  return block;
+  return misses;
+}
+
+interface CollapsibleOptions {
+  title: string;
+  expanded: boolean;
+  onToggle(expanded: boolean): void;
+}
+
+interface CollapsibleParts {
+  heading: HTMLElement;
+  body: HTMLElement;
+}
+
+function createCollapsible({
+  title,
+  expanded,
+  onToggle,
+}: CollapsibleOptions): CollapsibleParts {
+  const heading = el("h3", "stats-subtitle");
+  const toggle = button(title, "stats-section__toggle");
+  toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+  const marker = el("span", "stats-section__marker");
+  marker.setAttribute("aria-hidden", "true");
+  toggle.append(marker);
+
+  const body = el("div", "stats-section__body");
+  body.hidden = !expanded;
+
+  toggle.addEventListener("click", () => {
+    const next = body.hidden !== false;
+    body.hidden = !next;
+    toggle.setAttribute("aria-expanded", next ? "true" : "false");
+    onToggle(next);
+  });
+
+  heading.append(toggle);
+  return { heading, body };
 }
 
 export const renderStats: Screen = (root, context) => {
@@ -196,6 +388,18 @@ export const renderStats: Screen = (root, context) => {
 
   const status = el("div", "form-status");
   status.setAttribute("aria-live", "polite");
+
+  const toggleSection = (key: keyof StatsSections, expanded: boolean): void => {
+    const current =
+      context.state.settings.statsSections ?? DEFAULT_STATS_SECTIONS;
+    const result = context.updateSettings({
+      statsSections: { ...current, [key]: expanded },
+    });
+    status.replaceChildren();
+    if (!result.ok) {
+      showStatus(status, storageMessage(result.reason));
+    }
+  };
 
   const createActions = (): HTMLElement => {
     const actions = el("section", "stats-actions");
@@ -312,11 +516,13 @@ export const renderStats: Screen = (root, context) => {
   }
 
   const initial = defaultSelection(practiced);
-  let selectedStackId = initial?.stackId ?? practiced[0]?.stackId ?? "";
-  let selectedMode: Mode = initial?.mode ?? "basic";
+  let tableView = createCardTableView(
+    initial?.stackId ?? practiced[0]?.stackId ?? "",
+    initial?.mode ?? "basic",
+  );
 
   const currentStack = (): PracticedStack | null =>
-    practiced.find((stack) => stack.stackId === selectedStackId) ??
+    practiced.find((stack) => stack.stackId === tableView.stackId) ??
     practiced[0] ??
     null;
 
@@ -337,7 +543,7 @@ export const renderStats: Screen = (root, context) => {
     if (!stack) return;
 
     for (const entry of stack.modes) {
-      const active = entry.mode === selectedMode;
+      const active = entry.mode === tableView.mode;
       const tab = button(
         modeLabel(entry.mode),
         active
@@ -348,7 +554,7 @@ export const renderStats: Screen = (root, context) => {
       tab.setAttribute("aria-pressed", active ? "true" : "false");
       tab.dataset.mode = entry.mode;
       tab.addEventListener("click", () => {
-        selectedMode = entry.mode;
+        tableView = changeCardTableMode(tableView, entry.mode);
         renderTabs();
         renderData();
       });
@@ -362,7 +568,8 @@ export const renderStats: Screen = (root, context) => {
     if (!stack) return;
 
     const selected =
-      stack.modes.find((entry) => entry.mode === selectedMode) ?? stack.modes[0];
+      stack.modes.find((entry) => entry.mode === tableView.mode) ??
+      stack.modes[0];
     if (!selected) return;
 
     const descriptor = describeStack(state, stack.stackId);
@@ -380,8 +587,30 @@ export const renderStats: Screen = (root, context) => {
     card.append(head);
 
     card.append(renderFigures(selected.stats));
-    card.append(renderPracticeDays(selected.stats));
-    card.append(renderMisses(selected.stats));
+
+    const sections =
+      context.state.settings.statsSections ?? DEFAULT_STATS_SECTIONS;
+
+    const practiceDays = createCollapsible({
+      title: strings.statsPage.practiceDays,
+      expanded: sections.practiceDays,
+      onToggle: (expanded) => toggleSection("practiceDays", expanded),
+    });
+    practiceDays.body.append(renderPracticeDays(selected.stats));
+
+    const recentMisses = createCollapsible({
+      title: strings.statsPage.recentMisses,
+      expanded: sections.recentMisses,
+      onToggle: (expanded) => toggleSection("recentMisses", expanded),
+    });
+    recentMisses.body.append(renderMisses(selected.stats));
+
+    card.append(
+      practiceDays.heading,
+      practiceDays.body,
+      recentMisses.heading,
+      recentMisses.body,
+    );
 
     const remove = button(
       strings.statsPage.deleteTrainingData,
@@ -406,6 +635,27 @@ export const renderStats: Screen = (root, context) => {
     card.append(remove);
 
     dataHost.append(card);
+
+    const order = stackOrderFor(state, stack.stackId);
+    const cards = createCollapsible({
+      title: strings.statsPage.cardsTitle,
+      expanded: sections.cards,
+      onToggle: (expanded) => toggleSection("cards", expanded),
+    });
+    cards.body.append(
+      renderCardTable({
+        order,
+        stats: selected.stats,
+        view: tableView,
+        onSortChange(sort) {
+          tableView = changeCardTableSort(tableView, sort);
+        },
+      }),
+    );
+
+    const panel = el("section", "stats-cards");
+    panel.append(cards.heading, cards.body);
+    tableArea.replaceChildren(panel);
   };
 
   const selectorField = el("div", "field stats-stack-select");
@@ -424,16 +674,19 @@ export const renderStats: Screen = (root, context) => {
       option.value = stack.stackId;
       select.append(option);
     }
-    select.value = selectedStackId;
+    select.value = tableView.stackId;
 
     select.addEventListener("change", () => {
       const next = practiced.find((stack) => stack.stackId === select.value);
       if (!next) {
-        select.value = selectedStackId;
+        select.value = tableView.stackId;
         return;
       }
-      selectedStackId = next.stackId;
-      selectedMode = mostRecentMode(next);
+      tableView = changeCardTableStack(
+        tableView,
+        next.stackId,
+        mostRecentMode(next),
+      );
       renderTabs();
       renderData();
     });
@@ -443,7 +696,7 @@ export const renderStats: Screen = (root, context) => {
     selectorField.hidden = true;
   }
 
-  const tableArea = el("div", "stats-cards");
+  const tableArea = el("div", "stats-cards-host");
 
   root.append(
     selectorField,

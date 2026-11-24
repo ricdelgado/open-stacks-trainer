@@ -59,6 +59,11 @@ describe("schema migration", () => {
       accelerateThresholdTenths: 10,
       endless: false,
       language: "en",
+      statsSections: {
+        practiceDays: true,
+        recentMisses: true,
+        cards: true,
+      },
     });
     expect(result.state.customStacks).toHaveLength(1);
 

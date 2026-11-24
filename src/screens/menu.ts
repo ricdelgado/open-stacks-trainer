@@ -4,6 +4,7 @@ import { strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
 import { openHelpDialog } from "../ui/help-dialog";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
+import { createTrainingSettings } from "../ui/training-settings";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
 
@@ -13,6 +14,11 @@ export const renderMenu: Screen = (root, context) => {
   const header = el("header", "menu-hero");
   const title = el("h1", "menu-title", strings.appTitle);
   const tagline = el("p", "menu-tagline", strings.tagline);
+  const settings = link(
+    "#/settings",
+    strings.menu.settings,
+    "button button--secondary button--small menu-settings",
+  );
 
   let helpDialog: HTMLDialogElement | null = null;
   const help = button(
@@ -30,7 +36,7 @@ export const renderMenu: Screen = (root, context) => {
     );
   });
 
-  header.append(title, tagline, help);
+  header.append(title, tagline);
   root.append(header);
 
   renderStorageNotice(root, context);
@@ -113,8 +119,26 @@ export const renderMenu: Screen = (root, context) => {
   }
 
   directionGroup.append(segments);
-  startPanel.append(directionGroup);
-  startPanel.append(formStatus);
+
+  const trainingSettings = el("details", "training-settings");
+  const trainingSummary = el(
+    "summary",
+    "training-settings__summary",
+    strings.settingsPage.trainingSettings,
+  );
+  trainingSummary.setAttribute("aria-expanded", "false");
+  trainingSettings.append(
+    trainingSummary,
+    createTrainingSettings(context, formStatus),
+  );
+  trainingSettings.addEventListener("toggle", () => {
+    trainingSummary.setAttribute(
+      "aria-expanded",
+      trainingSettings.open ? "true" : "false",
+    );
+  });
+
+  startPanel.append(directionGroup, trainingSettings, formStatus);
   root.append(startPanel);
 
   select.addEventListener("change", () => {
@@ -187,6 +211,8 @@ export const renderMenu: Screen = (root, context) => {
   );
   nav.append(statsLink, stacksLink);
   root.append(nav);
+  root.append(help);
+  root.append(settings);
 
   return () => {
     if (helpDialog) {

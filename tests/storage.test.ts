@@ -97,6 +97,21 @@ describe("app storage", () => {
     expect(storage.values.get(STORAGE_KEY)).toBe(raw);
   });
 
+  it("accepts a v2 payload without the stats section preferences", () => {
+    const storage = new MemoryStorage();
+    const state = createDefaultState();
+    const legacy = {
+      ...state,
+      settings: { ...state.settings },
+    };
+    delete (legacy.settings as { statsSections?: unknown }).statsSections;
+    storage.values.set(STORAGE_KEY, JSON.stringify(legacy));
+
+    const result = new AppStore(storage).load();
+    expect(result.ok).toBe(true);
+    expect(result.state.settings.statsSections).toBeUndefined();
+  });
+
   it("accepts the current schema version", () => {
     const storage = new MemoryStorage();
     storage.values.set(

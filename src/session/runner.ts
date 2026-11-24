@@ -11,20 +11,40 @@ export interface GradedItem {
   progress: SessionProgress;
 }
 
+export interface SessionRunnerOptions {
+  endless?: boolean;
+  nextBatch?: (previousFrontCard: string) => GeneratedSession | null;
+}
+
 export class SessionRunner {
   readonly generated: GeneratedSession;
+  private batch: GeneratedSession;
+  private endless: boolean;
+  private readonly nextBatch:
+    | ((previousFrontCard: string) => GeneratedSession | null)
+    | null;
   private index = 0;
   private answerRevealed = false;
   private sessionProgress = createSessionProgress();
   private correctElapsedTenths = 0;
   private correctTimedAnswers = 0;
 
-  constructor(generated: GeneratedSession) {
+  constructor(
+    generated: GeneratedSession,
+    options: SessionRunnerOptions = {},
+  ) {
     this.generated = generated;
+    this.batch = generated;
+    this.endless = options.endless ?? false;
+    this.nextBatch = options.nextBatch ?? null;
   }
 
   get currentItem(): SessionItem | null {
-    return this.generated.items[this.index] ?? null;
+    return this.batch.items[this.index] ?? null;
+  }
+
+  get isEndless(): boolean {
+    return this.endless;
   }
 
   get revealed(): boolean {
@@ -40,7 +60,8 @@ export class SessionRunner {
   }
 
   get isComplete(): boolean {
-    return this.index >= this.generated.items.length;
+    if (this.endless) return false;
+    return this.index >= this.batch.items.length;
   }
 
   reveal(): boolean {
@@ -74,6 +95,16 @@ export class SessionRunner {
     this.sessionProgress = applySessionAnswer(this.sessionProgress, answer);
     this.index += 1;
     this.answerRevealed = false;
+
+    if (this.index >= this.batch.items.length && this.endless) {
+      const next = this.nextBatch?.(item.card) ?? null;
+      if (next && next.items.length > 0) {
+        this.batch = next;
+        this.index = 0;
+      } else {
+        this.endless = false;
+      }
+    }
 
     return { item, progress: this.sessionProgress };
   }

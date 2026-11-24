@@ -10,7 +10,17 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Basic mode** — one shuffled pass through all 52 positions, one prompt at a time, self-graded after reveal. The v1 mode and the v2 default.
 
+**Card +3 mode** — one 52-item pass. The front follows the direction: a position or a card. The back is always the next three cards after the front card’s position, wrapping 52 → 1. One grade covers the triple. Only the front card updates per-card stats.
+
+**Endless** — a modifier, not a mode. A batch has 104 regular items: two independent shuffled passes of all 52 positions. A fresh batch starts without a summary until the user quits. Stats go to the active Basic or Card +3 record, and the screen shows “Answered N.”
+
 **Future modes** — Quartets (Pit Hartling) and ACAAN are later modes. Cyclic stacks need a different model and are out of scope.
+
+**Language** — a UI locale stored in `settings.language`. Codes are `en`, `pt-BR`, `es`, `it`, and `ja`. English is the default, the source dictionary, and the fallback. Only languages with a complete dictionary appear in Settings → Language.
+
+**Locale dictionary** — one typed object per language with exactly the English key shape, including functions for interpolated strings. Card codes and suit glyphs stay language-neutral; stack names and creator names are not translated.
+
+**Locale formatting** — dates, times, numbers, decimals, and percentages use the selected language. Dates persist as ISO or `YYYY-MM-DD`; only display formatting changes.
 
 ## Core vocabulary
 
@@ -33,9 +43,13 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 - `card-to-position` — front is the card, back is the position.
 - `mixed` — each session item gets a direction at random, 50/50, fixed for that item.
 
-**Session** — one shuffled pass of all 52 positions, with no repeats. Use “session,” not “round” or “quiz.”
+**Session** — one training run. Basic and Card +3 normally cover one shuffled pass of all 52 positions, with no repeats. An Endless session continues in 104-item batches until quit. Use “session,” not “round” or “quiz.”
 
 **Item** — one position/card pair inside a session, with its position, card, and direction.
+
+**Extra prompt** — a scheduled Reinforcement or Accelerate prompt inserted between regular items. It uses the active mode and direction, is graded once, and counts in totals, streaks, practice days, recent misses, and per-card stats.
+
+**Planned total** — the regular items plus every scheduled extra prompt. Basic and Card +3 show `answered/total`; Endless shows “Answered N.”
 
 **Front** — the prompt shown before the answer is revealed.
 
@@ -55,13 +69,19 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Reinforcement** — a weak-card flag: set after a miss, cleared after five consecutive correct answers for that card.
 
+**Reinforcement list** — the per stack and mode set of cards flagged for reinforcement. Extra reinforcement prompts appear after every 3–8 regular items. The Stats per-card table shows `x/5` while a card is listed.
+
+**Accelerate** — a global toggle that schedules extra prompts for slow cards. A card qualifies when its mode average is strictly greater than the chosen threshold (0.5s, 1s, 2s, or 3s) and it has at least one timed Got it answer. Extra accelerate prompts appear after every 2–4 regular items, after any reinforcement prompt due at the same gap.
+
+**Elapsed time** — recall time measured in tenths of a second. A Got it answer records it; a Missed answer records no time. Per-card average is elapsed tenths divided by correct timed answers. The on-screen timer is floored to whole seconds, stops on reveal, and pauses while the document is hidden.
+
 **Current streak** — the number of consecutive correct answers for a stack, persisted across sessions. A miss resets it to 0.
 
 **Best streak** — the highest current streak ever recorded for a stack, persisted.
 
 **Session-best streak** — the longest consecutive-correct run inside one session, starting from 0 at session start. Shown on the summary only; separate from the stack’s persisted best streak.
 
-**Summary** — the screen after the 52nd item with correct/missed counts, accuracy, session-best streak, the missed cards, and Train again / Menu.
+**Summary** — the screen after a completed session or an Endless Quit, with correct/missed counts out of the answered total, accuracy, session-best streak, average time, the missed cards, and Train again / Menu.
 
 **Practice day** — one local calendar date (`YYYY-MM-DD`) with the number of cards answered and how many were correct. There is one entry per day.
 
@@ -91,17 +111,19 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 ## Screens and actions
 
-**Menu** — the main screen: Start training, Stack selector, Mode selector, Stats, My Stacks. A direction control sits inside the Start Training area. Footer shows the AI disclosure.
+**Menu** — the main screen: Start training, Stack selector, Direction selector, collapsible Training settings, Mode selector, Stats, My Stacks, then How to use this app and Settings. Footer shows the AI disclosure.
 
-**Training screen** — the active session: progress (`answered/52`), current streak, direction label, front, Answer, then Missed/Got it after reveal.
+**Training screen** — the active session: progress (`answered/planned total`, or “Answered N” in Endless), current streak, direction label, quiet timer, mode label for Card +3, an optional Reinforcement/Accelerate indicator beside the timer, front, Answer, then Missed/Got it after reveal.
 
-**Stats page** — stack-focused, per mode: stack selector, mode tabs, per-mode figures, and the per-card table, with global backup/restore/delete actions.
+**Stats page** — stack-focused, per mode: stack selector, mode tabs, per-mode figures, collapsible practice days / recent misses / per-card table, and global backup/restore/delete actions. The table can sort by stack order, Reinforcement, slowest average, most missed, or lowest streak.
 
 **My Stacks** — the stack management screen: built-ins (view only) and customs (view, edit, export, delete), plus Create stack and Import stack.
 
 **Editor** — the custom-stack grid: name, suit tabs, card pool, adaptive position grid, pinned selection bar, save. Used cards are greyed out. See the PRD for the exact interaction rules.
 
 **Import** — paste 52 cards in notation or a stack export JSON, validate, name, save as a custom stack.
+
+**Settings** — the whole-app settings area reached from the bottom of the menu. It holds Language now, with room for future appearance settings. Training settings are a collapsible panel on the menu under Direction and hold the persisted Reinforcement, Accelerate (with threshold), and Endless toggles. Changes save immediately.
 
 **View** — the read-only 1–52 order of a stack, with creator credit and export.
 
@@ -110,6 +132,8 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 - Say **Open Stacks Trainer** (plural “Stacks”) in UI, README, and docs.
 - Say **stack**, **position**, **card**, **session**, **item**, **reveal**, **grade**, **miss**, **streak**, **practice day**, **stats**, **backup**, **restore**.
 - Use the exact button labels **Answer**, **Missed**, **Got it**, **Train again**, **Menu**, **Export my data**, **Restore from file**, **Delete all data**, **Delete training data**, **Create stack**, **Import stack**, **Save**.
+- Use the exact setting labels **Reinforcement**, **Accelerate**, **Endless**, **Slow card threshold**, and **Settings**.
+- Show language names in their own language: **English**, **Português (Brasil)**, **Español**, **Italiano**, **日本語**.
 - Do not use **quiz**, **round**, **level**, **score**, **points**, **wrong**, **failure**, **flashcard** (except when explaining the inspiration in the README), **deck order** (say **stack order**), or **index** (say **position**).
 - “Rank” means a card’s value. “Position” means 1–52.
 

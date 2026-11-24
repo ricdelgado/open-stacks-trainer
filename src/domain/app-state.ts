@@ -110,6 +110,15 @@ function isAccelerateThreshold(value: unknown): value is number {
   );
 }
 
+function isStatsSections(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.practiceDays === "boolean" &&
+    typeof value.recentMisses === "boolean" &&
+    typeof value.cards === "boolean"
+  );
+}
+
 export function isSettings(value: unknown): value is Settings {
   return (
     isRecord(value) &&
@@ -121,7 +130,8 @@ export function isSettings(value: unknown): value is Settings {
     isAccelerateThreshold(value.accelerateThresholdTenths) &&
     typeof value.endless === "boolean" &&
     typeof value.language === "string" &&
-    value.language.length > 0
+    value.language.length > 0 &&
+    (value.statsSections === undefined || isStatsSections(value.statsSections))
   );
 }
 

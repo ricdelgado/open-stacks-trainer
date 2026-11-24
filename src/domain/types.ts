@@ -14,6 +14,12 @@ export const DEFAULT_ACCELERATE_THRESHOLD_TENTHS = 10;
 
 export const REINFORCEMENT_CLEAR_STREAK = 5;
 
+export interface StatsSections {
+  practiceDays: boolean;
+  recentMisses: boolean;
+  cards: boolean;
+}
+
 export interface Settings {
   selectedStackId: string;
   direction: Direction;
@@ -23,6 +29,7 @@ export interface Settings {
   accelerateThresholdTenths: number;
   endless: boolean;
   language: string;
+  statsSections?: StatsSections;
 }
 
 export interface CustomStack {

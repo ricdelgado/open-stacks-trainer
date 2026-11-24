@@ -57,7 +57,9 @@ export const renderTraining: Screen = (root, context) => {
   const modeLabel = el("p", "training-mode");
   const timerText = el("p", "training-timer");
   timerText.setAttribute("aria-hidden", "true");
-  stats.append(progress, streak, direction, modeLabel, timerText);
+  const insertLabel = el("p", "training-insert");
+  insertLabel.hidden = true;
+  stats.append(progress, streak, direction, modeLabel, timerText, insertLabel);
 
   const updateTimerText = (): void => {
     timerText.textContent = strings.training.timerSeconds(timer.displaySeconds);
@@ -78,16 +80,25 @@ export const renderTraining: Screen = (root, context) => {
     const view = context.getTrainingView();
     if (!view) return;
 
-    progress.textContent = strings.training.progress(view.answered, view.total);
+    progress.textContent = view.endless
+      ? strings.training.answeredCount(view.answered)
+      : strings.training.progress(view.answered, view.total);
     progress.setAttribute(
       "aria-label",
-      strings.training.answeredProgress(view.answered, view.total),
+      view.endless
+        ? strings.training.answeredCountLabel(view.answered)
+        : strings.training.answeredProgress(view.answered, view.total),
     );
     streak.textContent = strings.training.streak(view.persistedStreak);
     direction.textContent = strings.directions[view.item.direction];
     modeLabel.textContent =
       view.mode === "card-plus-3" ? strings.menu.modeCardPlus3 : "";
     modeLabel.hidden = view.mode !== "card-plus-3";
+    insertLabel.hidden = view.item.insert === undefined;
+    insertLabel.textContent =
+      view.item.insert === "accelerate"
+        ? strings.training.accelerateBadge
+        : strings.training.reinforcementBadge;
     live.textContent = view.revealed
       ? strings.training.revealWithTime(
           answerDescription(view),

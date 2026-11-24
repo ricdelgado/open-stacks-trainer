@@ -1,5 +1,5 @@
 import { accuracyPercent } from "../domain/scoring";
-import { strings } from "../strings";
+import { getLocale, strings } from "../strings";
 import { createCardFace } from "../ui/card-face";
 import { button, el, link, showStatus } from "../ui/elements";
 import { storageMessage } from "../ui/storage-messages";
@@ -16,7 +16,7 @@ function statBlock(label: string, value: string): HTMLElement {
 
 function formatAverageTime(tenths: number | null): string {
   if (tenths === null) return strings.summary.emptyValue;
-  const formatted = (tenths / 10).toLocaleString(undefined, {
+  const formatted = (tenths / 10).toLocaleString(getLocale(), {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });

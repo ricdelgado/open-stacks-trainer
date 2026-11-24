@@ -7,7 +7,9 @@ export type Route =
   | { name: "stack-new" }
   | { name: "stack-edit"; id: string }
   | { name: "stack-view"; id: string }
-  | { name: "import" };
+  | { name: "import" }
+  | { name: "settings" }
+  | { name: "settings-language" };
 
 function decodeId(value: string): string | null {
   try {
@@ -33,6 +35,16 @@ export function parseRoute(hash: string): Route {
     return { name: "my-stacks" };
   }
   if (first === "import" && second === undefined) return { name: "import" };
+
+  if (first === "settings") {
+    if (second === undefined) return { name: "settings" };
+    if (second === "training" && third === undefined) {
+      return { name: "settings" };
+    }
+    if (second === "language" && third === undefined) {
+      return { name: "settings-language" };
+    }
+  }
 
   if (first === "stacks") {
     if (second === "new" && third === undefined) return { name: "stack-new" };

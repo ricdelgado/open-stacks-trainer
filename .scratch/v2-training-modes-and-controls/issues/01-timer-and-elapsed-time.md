@@ -4,7 +4,7 @@
 
 **Blocked by:** `v2-per-card-stats/01 — Storage schema v2 and mode-split stats`.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] A small, muted timer appears on the training screen near the progress/streak line.
 - [x] The timer starts when a new front is rendered and resets for every new prompt.
@@ -40,3 +40,8 @@
 - `node scripts/verify-stacks.mjs` — pass
 
 Awaiting human check in the browser before commit.
+
+## Comments
+
+- Human confirmed shipped. Commit `4c8559d` is on `origin/main` and included in the
+  live Pages build. Ticket resolved.

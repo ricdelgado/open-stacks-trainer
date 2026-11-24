@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] The storage payload moves to `schemaVersion: 2` with one `localStorage` key.
 - [x] Stats are keyed by stack ID and then mode (`basic`, `card-plus-3`).
@@ -42,3 +42,8 @@
 - Dev server smoke — HTTP 200
 
 Awaiting human review before commit and push.
+
+## Comments
+
+- Human confirmed shipped. Commit `0b738a9` is on `origin/main`; the Pages deploy
+  from that push succeeded. Ticket resolved.
