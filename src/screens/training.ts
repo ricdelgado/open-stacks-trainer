@@ -1,3 +1,4 @@
+import { RecallTimer } from "../domain/timer";
 import { cardAccessibleLabel } from "../ui/card-labels";
 import { strings } from "../strings";
 import { confirmAction } from "../ui/confirm";
@@ -42,12 +43,19 @@ export const renderTraining: Screen = (root, context) => {
 
   const stackName = el("p", "training-stack", initial.stackName);
 
+  const timer = new RecallTimer();
   const stats = el("div", "training-stats");
   const progress = el("p", "training-progress");
   progress.setAttribute("aria-live", "polite");
   const streak = el("p", "training-streak");
   const direction = el("p", "training-direction");
-  stats.append(progress, streak, direction);
+  const timerText = el("p", "training-timer");
+  timerText.setAttribute("aria-hidden", "true");
+  stats.append(progress, streak, direction, timerText);
+
+  const updateTimerText = (): void => {
+    timerText.textContent = strings.training.timerSeconds(timer.displaySeconds);
+  };
 
   const live = el("p", "sr-only");
   live.setAttribute("aria-live", "polite");
@@ -72,8 +80,12 @@ export const renderTraining: Screen = (root, context) => {
     streak.textContent = strings.training.streak(view.persistedStreak);
     direction.textContent = strings.directions[view.item.direction];
     live.textContent = view.revealed
-      ? strings.training.revealAnnouncement(answerDescription(view))
+      ? strings.training.revealWithTime(
+          answerDescription(view),
+          timer.displaySeconds,
+        )
       : "";
+    updateTimerText();
 
     const pair = el(
       "div",
@@ -150,11 +162,15 @@ export const renderTraining: Screen = (root, context) => {
 
   const reveal = (): void => {
     if (!context.revealAnswer()) return;
+    timer.stop();
     renderPrompt(true);
   };
 
   const grade = (correct: boolean): void => {
-    const outcome = context.gradeAnswer(correct);
+    const outcome = context.gradeAnswer(
+      correct,
+      correct ? timer.tenths : undefined,
+    );
     if (!outcome) return;
     if (outcome.complete) return;
 
@@ -162,6 +178,7 @@ export const renderTraining: Screen = (root, context) => {
     if (!outcome.save.ok) {
       showStatus(status, storageMessage(outcome.save.reason));
     }
+    timer.start();
     renderPrompt(true);
   };
 
@@ -198,11 +215,28 @@ export const renderTraining: Screen = (root, context) => {
     }
   };
 
+  const onVisibilityChange = (): void => {
+    if (document.hidden) {
+      timer.pause();
+    } else {
+      timer.resume();
+    }
+    updateTimerText();
+  };
+
+  const timerInterval = window.setInterval(() => {
+    if (timer.isRunning) updateTimerText();
+  }, 250);
+
   window.addEventListener("keydown", onKeyDown);
+  document.addEventListener("visibilitychange", onVisibilityChange);
   root.append(header, stackName, stats, play, live, status);
+  timer.start();
   renderPrompt(false);
 
   return () => {
     window.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    window.clearInterval(timerInterval);
   };
 };

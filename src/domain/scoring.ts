@@ -149,9 +149,16 @@ export function applyAnswer(
   };
 }
 
+export function averageTenths(
+  totalTenths: number,
+  count: number,
+): number | null {
+  if (count <= 0) return null;
+  return totalTenths / count;
+}
+
 export function averageElapsedTenths(card: CardStats): number | null {
-  if (card.correctTimedAnswers <= 0) return null;
-  return card.elapsedTenths / card.correctTimedAnswers;
+  return averageTenths(card.elapsedTenths, card.correctTimedAnswers);
 }
 
 export function createSessionProgress(): SessionProgress {

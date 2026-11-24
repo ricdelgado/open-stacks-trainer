@@ -53,4 +53,34 @@ describe("session runner", () => {
     expect(session.reveal()).toBe(false);
     expect(session.grade(true, new Date())).toBeNull();
   });
+
+  it("averages correct timed answers and ignores misses", () => {
+    const session = runner();
+    session.reveal();
+    session.grade(true, new Date(), 20);
+    session.reveal();
+    session.grade(false, new Date(), 99);
+    session.reveal();
+    session.grade(true, new Date(), 40);
+
+    expect(session.sessionAverageTenths).toBe(30);
+  });
+
+  it("has no session average without timed answers", () => {
+    const session = runner();
+    session.reveal();
+    session.grade(true, new Date());
+
+    expect(session.sessionAverageTenths).toBeNull();
+  });
+
+  it("ignores non-integer or negative elapsed values", () => {
+    const session = runner();
+    session.reveal();
+    session.grade(true, new Date(), -5);
+    session.reveal();
+    session.grade(true, new Date(), 2.5);
+
+    expect(session.sessionAverageTenths).toBeNull();
+  });
 });

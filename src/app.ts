@@ -153,6 +153,7 @@ export function startApp(appRoot: HTMLElement): void {
   let completedSession: {
     generated: GeneratedSession;
     progress: SessionProgress;
+    averageTenths: number | null;
   } | null = null;
 
   if (loaded.ok && normalized.changed) {
@@ -351,14 +352,15 @@ export function startApp(appRoot: HTMLElement): void {
       revealAnswer() {
         return activeSession?.reveal() ?? false;
       },
-      gradeAnswer(correct): GradeOutcome | null {
+      gradeAnswer(correct, elapsedTenths): GradeOutcome | null {
         const runner = activeSession;
         if (!runner) return null;
         const item = runner.currentItem;
         if (!item || !runner.revealed) return null;
 
         const at = new Date();
-        const graded = runner.grade(correct, at);
+        const timedTenths = correct ? elapsedTenths : undefined;
+        const graded = runner.grade(correct, at, timedTenths);
         if (!graded) return null;
 
         const stackId = runner.generated.stackId;
@@ -370,6 +372,7 @@ export function startApp(appRoot: HTMLElement): void {
           direction: item.direction,
           correct,
           at,
+          elapsedTenths: timedTenths,
         });
         const save = persistState({
           ...state,
@@ -384,6 +387,7 @@ export function startApp(appRoot: HTMLElement): void {
           completedSession = {
             generated: runner.generated,
             progress: graded.progress,
+            averageTenths: runner.sessionAverageTenths,
           };
           activeSession = null;
           go("#/summary");
@@ -418,7 +422,7 @@ export function startApp(appRoot: HTMLElement): void {
       },
       getSummaryView() {
         if (!completedSession) return null;
-        const { generated, progress } = completedSession;
+        const { generated, progress, averageTenths } = completedSession;
         return {
           stackId: generated.stackId,
           stackName: generated.stackName,
@@ -428,6 +432,7 @@ export function startApp(appRoot: HTMLElement): void {
           missed: progress.missed,
           bestRun: progress.bestRun,
           misses: progress.misses,
+          averageTenths,
         };
       },
     };

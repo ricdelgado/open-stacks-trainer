@@ -14,6 +14,15 @@ function statBlock(label: string, value: string): HTMLElement {
   return block;
 }
 
+function formatAverageTime(tenths: number | null): string {
+  if (tenths === null) return strings.summary.emptyValue;
+  const formatted = (tenths / 10).toLocaleString(undefined, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  return strings.summary.seconds(formatted);
+}
+
 export const renderSummary: Screen = (root, context) => {
   const view = context.getSummaryView();
   if (!view) return;
@@ -48,6 +57,10 @@ export const renderSummary: Screen = (root, context) => {
         : strings.summary.percent(percent),
     ),
     statBlock(strings.summary.sessionBest, String(view.bestRun)),
+    statBlock(
+      strings.summary.averageTime,
+      formatAverageTime(view.averageTenths),
+    ),
   );
 
   const missedHeading = el("h2", "summary-subtitle", strings.summary.missedCards);

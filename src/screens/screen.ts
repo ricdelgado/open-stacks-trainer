@@ -49,6 +49,7 @@ export interface SessionSummaryView {
   missed: number;
   bestRun: number;
   misses: readonly SessionMiss[];
+  averageTenths: number | null;
 }
 
 export interface AppContext {
@@ -69,7 +70,7 @@ export interface AppContext {
   trainAgain(): void;
   quitSession(): void;
   revealAnswer(): boolean;
-  gradeAnswer(correct: boolean): GradeOutcome | null;
+  gradeAnswer(correct: boolean, elapsedTenths?: number): GradeOutcome | null;
   getTrainingView(): TrainingView | null;
   getSummaryView(): SessionSummaryView | null;
 }

@@ -554,9 +554,15 @@ p {
 }
 
 .training-streak,
-.training-direction {
+.training-direction,
+.training-timer {
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.training-timer {
+  min-width: 2.5em;
+  font-variant-numeric: tabular-nums;
 }
 
 .training-play:focus-visible {

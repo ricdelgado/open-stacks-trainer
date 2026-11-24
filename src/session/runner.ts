@@ -1,5 +1,6 @@
 import {
   applySessionAnswer,
+  averageTenths,
   createSessionProgress,
   type SessionProgress,
 } from "../domain/scoring";
@@ -15,6 +16,8 @@ export class SessionRunner {
   private index = 0;
   private answerRevealed = false;
   private sessionProgress = createSessionProgress();
+  private correctElapsedTenths = 0;
+  private correctTimedAnswers = 0;
 
   constructor(generated: GeneratedSession) {
     this.generated = generated;
@@ -32,6 +35,10 @@ export class SessionRunner {
     return this.sessionProgress;
   }
 
+  get sessionAverageTenths(): number | null {
+    return averageTenths(this.correctElapsedTenths, this.correctTimedAnswers);
+  }
+
   get isComplete(): boolean {
     return this.index >= this.generated.items.length;
   }
@@ -42,9 +49,19 @@ export class SessionRunner {
     return true;
   }
 
-  grade(correct: boolean, at: Date): GradedItem | null {
+  grade(correct: boolean, at: Date, elapsedTenths?: number): GradedItem | null {
     const item = this.currentItem;
     if (!item || !this.answerRevealed) return null;
+
+    if (
+      correct &&
+      elapsedTenths !== undefined &&
+      Number.isSafeInteger(elapsedTenths) &&
+      elapsedTenths >= 0
+    ) {
+      this.correctElapsedTenths += elapsedTenths;
+      this.correctTimedAnswers += 1;
+    }
 
     const answer = {
       card: item.card,

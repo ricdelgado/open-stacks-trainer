@@ -99,6 +99,9 @@ export const strings = {
     cardLabel: "Card",
     positionAccessible: (position: number) => `Position ${position}`,
     revealAnnouncement: (answer: string) => `Answer: ${answer}`,
+    revealWithTime: (answer: string, seconds: number) =>
+      `Answer: ${answer}. Time ${seconds} ${seconds === 1 ? "second" : "seconds"}.`,
+    timerSeconds: (seconds: number) => `${seconds}s`,
   },
 
   summary: {
@@ -108,6 +111,8 @@ export const strings = {
     missed: "Missed",
     accuracy: "Accuracy",
     sessionBest: "Session-best streak",
+    averageTime: "Average time",
+    seconds: (formatted: string) => `${formatted}s`,
     countOutOf: (count: number, total: number) => `${count} / ${total}`,
     missedCards: "Missed cards",
     noMisses: "No misses. Clean session.",
