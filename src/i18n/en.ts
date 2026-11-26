@@ -392,6 +392,10 @@ export const en = {
     staysLocal: "Your progress stays in this browser.",
   },
 
+  pwa: {
+    updateReload: "New version available · Reload",
+  },
+
   common: {
     backToMenu: "Back to menu",
     backToMyStacks: "Back to My Stacks",

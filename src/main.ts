@@ -1,6 +1,6 @@
 import "./styles.css";
-import { registerSW } from "virtual:pwa-register";
 import { startApp } from "./app";
+import { initPwa } from "./pwa";
 
 const root = document.querySelector<HTMLElement>("#app");
 
@@ -9,11 +9,4 @@ if (!root) {
 }
 
 startApp(root);
-
-if (import.meta.env.PROD) {
-  try {
-    registerSW({ immediate: true });
-  } catch {
-    // Keep the app usable online when registration is unavailable.
-  }
-}
+initPwa();

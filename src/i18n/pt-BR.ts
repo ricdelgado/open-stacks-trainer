@@ -404,6 +404,10 @@ export const ptBR = {
     staysLocal: "Seu progresso fica neste navegador.",
   },
 
+  pwa: {
+    updateReload: "Nova versão disponível · Recarregar",
+  },
+
   common: {
     backToMenu: "Voltar ao menu",
     backToMyStacks: "Voltar para Meus baralhos",

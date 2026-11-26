@@ -6,9 +6,11 @@ import {
   generateSession,
   type GeneratedSession,
 } from "./domain/session";
+import { shouldShowUpdatePill } from "./domain/pwa";
 import { withSettings } from "./domain/settings";
 import { withoutStackStats } from "./domain/stats-selection";
 import type { AppState, Appearance, Direction, Mode } from "./domain/types";
+import { isUpdateAvailable, reloadForUpdate, subscribeToUpdate } from "./pwa";
 import { parseRoute, type Route } from "./router";
 import { renderEditor } from "./screens/editor";
 import { renderImport } from "./screens/import";
@@ -37,7 +39,8 @@ import {
   type SaveFailureReason,
 } from "./storage/app-store";
 import { setLanguage, strings } from "./strings";
-import { el, focusMainHeading, link } from "./ui/elements";
+import { button, el, focusMainHeading, link } from "./ui/elements";
+import { icon } from "./ui/icons";
 import { applyAppearance, watchSystemTheme } from "./ui/theme";
 
 interface ScreenDefinition {
@@ -337,9 +340,32 @@ export function startApp(appRoot: HTMLElement): void {
   appRoot.classList.add("app");
   const main = el("main", "screen");
   main.id = "main";
-  appRoot.replaceChildren(main, createFooter());
+  const updateHost = el("div", "pwa-update-host");
+  updateHost.hidden = true;
+  updateHost.setAttribute("aria-live", "polite");
+  appRoot.replaceChildren(main, updateHost, createFooter());
 
   let cleanup: (() => void) | null = null;
+
+  const renderUpdatePill = (route: Route): void => {
+    updateHost.replaceChildren();
+    const visible =
+      isUpdateAvailable() &&
+      shouldShowUpdatePill(route.name, activeSession !== null);
+    updateHost.hidden = !visible;
+    appRoot.classList.toggle("has-update-pill", visible);
+    if (!visible) return;
+
+    const reload = button(
+      strings.pwa.updateReload,
+      "button button--primary pwa-update-pill",
+    );
+    reload.prepend(icon("update"));
+    reload.addEventListener("click", () => {
+      reloadForUpdate();
+    });
+    updateHost.append(reload);
+  };
 
   const persistState = (next: AppState) => {
     state = next;
@@ -574,12 +600,17 @@ export function startApp(appRoot: HTMLElement): void {
 
     const result = definition.screen(main, context);
     cleanup = typeof result === "function" ? result : null;
+    renderUpdatePill(route);
 
     if (moveFocus) {
       focusMainHeading(main);
       window.scrollTo(0, 0);
     }
   };
+
+  const unsubscribeUpdate = subscribeToUpdate(() => {
+    renderUpdatePill(parseRoute(window.location.hash));
+  });
 
   window.addEventListener("hashchange", () => {
     render(true);
@@ -590,6 +621,7 @@ export function startApp(appRoot: HTMLElement): void {
     () => {
       systemThemeCleanup?.();
       systemThemeCleanup = null;
+      unsubscribeUpdate();
     },
     { once: true },
   );

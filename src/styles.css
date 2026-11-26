@@ -167,6 +167,31 @@ h3 {
   flex-direction: column;
 }
 
+.app.has-update-pill {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.pwa-update-host {
+  position: fixed;
+  z-index: 20;
+  right: 1rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  left: 1rem;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pwa-update-host[hidden] {
+  display: none;
+}
+
+.pwa-update-pill {
+  max-width: 30rem;
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
 .screen {
   width: 100%;
   max-width: 44rem;
