@@ -4,6 +4,8 @@ A free, static, browser-only trainer for memorized card stacks. Train **Mnemonic
 
 **Live site:** https://ricdelgado.github.io/open-stacks-trainer/
 
+**Install it:** open the live site, then use **Add to Home Screen** on Android/Chrome or **Share → Add to Home Screen** on iOS. After the first load it opens and trains offline.
+
 ## Built with AI
 
 This project was coded by AI coding agents, under human direction:
@@ -18,17 +20,20 @@ The original design interview and prompt plan were produced by Qwen4-Max High. T
 
 - **Three verified built-in stacks:** Mnemonica, Aronson, Memorandum.
 - **Three directions:** position → card, card → position, or mixed.
-- **Two modes:** **Basic** asks one card or position at a time. **Next 3 cards** asks for the next three cards after the front card, wrapping from position 52 back to 1.
+- **Three modes:** **Basic** asks one card or position at a time. **Next 3 cards** asks for the next three cards after the front card, wrapping from position 52 back to 1. **Quartets** asks for the first card and the three distances between the four cards of each rank.
 - **Self-graded with a quiet timer:** reveal the answer, then tap **Got it** or **Missed**. A Got it answer records recall time; no typing, no spaced repetition.
-- **Extra practice:** **Reinforcement** brings missed cards back, **Accelerate** brings slow cards back above a chosen threshold, and **Endless** continues in batches of two shuffled passes until you quit.
-- **Streaks and stats:** current streak, best streak, accuracy, practice days, recent misses, average time, and a per-card table with sorting and reinforcement progress.
+- **Extra practice:** **Reinforcement** brings missed cards or ranks back, **Accelerate** brings slow cards back above a chosen threshold, and **Endless** continues in batches of two shuffled passes until you quit.
+- **Streaks and stats:** current streak, best streak, accuracy, practice days, recent misses, average time, and a per-card table (per-rank for Quartets) with sorting and reinforcement progress.
+- **Practice calendar:** a global heatmap at the top of Stats shows every practiced day, scaled to your busiest day.
+- **Light and dark themes:** a warm paper interface in light or dark, with a system-following default and an explicit **Appearance** setting.
+- **Installable and offline:** add the app to your home screen, launch it standalone, and train offline after the first load.
 - **Training settings:** a collapsible panel on the menu holds Reinforcement, Accelerate, and Endless; changes save immediately.
-- **Settings:** the app language lives here, with room for more whole-app settings later.
+- **Settings:** the app language and appearance live here.
 - **Languages:** English and Português (Brasil) now; Spanish, Italian, and Japanese are next.
 - **Custom stacks:** build one in a phone-friendly grid editor, or paste-import 52 cards. Export and re-import as JSON.
 - **Backup and restore:** export all stats, settings, and custom stacks, restore on another browser.
-- **Private by design:** everything stays in `localStorage`; there are no network requests after the assets load.
-- **Mobile-first:** large tap targets, no horizontal scrolling, light minimal interface, no image assets.
+- **Private by design:** everything stays in `localStorage`; there are no network requests after the assets load and no account, cookies, or analytics.
+- **Mobile-first:** large tap targets, no horizontal scrolling, a minimal light or dark interface, no image assets.
 
 Position 1 is the **top** of the face-down deck; position 52 is the bottom.
 
@@ -82,7 +87,7 @@ The site is a static build deployed to GitHub Pages by GitHub Actions on every p
 
 ## Roadmap
 
-Not yet: Quartets, ACAAN, cyclic stacks (Si Stebbins), drill-my-misses, Spanish, Italian, and Japanese UI, dark mode, duplicate-as-template, PWA/offline install.
+Not yet: ACAAN, cyclic stacks (Si Stebbins), drill-my-misses, Spanish, Italian, and Japanese UI, duplicate-as-template, and Accelerate for Quartets.
 
 ## License
 
