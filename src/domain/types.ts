@@ -34,6 +34,7 @@ export interface Settings {
   endless: boolean;
   language: string;
   appearance?: Appearance;
+  installCardDismissed?: boolean;
   statsSections?: StatsSections;
 }
 

@@ -392,6 +392,18 @@ export const en = {
     staysLocal: "Your progress stays in this browser.",
   },
 
+  install: {
+    title: "Install as app",
+    androidText:
+      "Add Open Stacks Trainer to your home screen for one-tap access and offline training.",
+    iosText: "Add Open Stacks Trainer from Safari:",
+    iosStepShare: "Tap the Share button.",
+    iosStepAdd: "Choose Add to Home Screen.",
+    install: "Install",
+    dismiss: "Dismiss install hint",
+    unavailable: "Install is not available right now.",
+  },
+
   pwa: {
     updateReload: "New version available · Reload",
   },

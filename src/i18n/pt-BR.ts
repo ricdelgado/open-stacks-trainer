@@ -404,6 +404,18 @@ export const ptBR = {
     staysLocal: "Seu progresso fica neste navegador.",
   },
 
+  install: {
+    title: "Instalar como app",
+    androidText:
+      "Adicione o Open Stacks Trainer à tela inicial para abrir com um toque e treinar offline.",
+    iosText: "Adicione o Open Stacks Trainer pelo Safari:",
+    iosStepShare: "Toque no botão Compartilhar.",
+    iosStepAdd: "Escolha Adicionar à Tela de Início.",
+    install: "Instalar",
+    dismiss: "Dispensar dica de instalação",
+    unavailable: "A instalação não está disponível agora.",
+  },
+
   pwa: {
     updateReload: "Nova versão disponível · Recarregar",
   },

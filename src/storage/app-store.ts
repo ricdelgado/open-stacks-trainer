@@ -1,7 +1,7 @@
 import { migrateState } from "../domain/migrate";
 import {
   DEFAULT_SETTINGS_TOGGLES,
-  withDefaultAppearance,
+  withDefaultSettings,
 } from "../domain/settings";
 import type { AppState } from "../domain/types";
 
@@ -116,7 +116,7 @@ export class AppStore {
 
     const state: AppState = {
       ...migration.state,
-      settings: withDefaultAppearance(migration.state.settings),
+      settings: withDefaultSettings(migration.state.settings),
     };
 
     this.issue = null;

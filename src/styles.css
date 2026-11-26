@@ -174,9 +174,9 @@ h3 {
 .pwa-update-host {
   position: fixed;
   z-index: 20;
-  right: 1rem;
+  right: max(1rem, env(safe-area-inset-right));
   bottom: calc(0.75rem + env(safe-area-inset-bottom));
-  left: 1rem;
+  left: max(1rem, env(safe-area-inset-left));
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -192,11 +192,108 @@ h3 {
   box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
 }
 
+.install-card-host {
+  margin-top: 1rem;
+}
+
+.install-card-host[hidden] {
+  display: none;
+}
+
+.install-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.install-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.install-card__icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22%;
+  background: var(--accent-gradient);
+  color: var(--card-ink);
+}
+
+.install-card__icon .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.install-card__copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.install-card__title {
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.install-card__text {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.install-card__dismiss {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.install-card__dismiss:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.install-card__dismiss .icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.install-card__action {
+  width: 100%;
+}
+
+.install-card__steps {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
 .screen {
   width: 100%;
   max-width: 44rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 2.5rem;
+  padding: max(1.5rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(2.5rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
   flex: 1;
 }
 
@@ -1542,8 +1639,8 @@ h3 {
 }
 
 .screen--editor {
-  padding-right: 0.5rem;
-  padding-left: 0.5rem;
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+  padding-left: max(0.5rem, env(safe-area-inset-left));
 }
 
 .editor-form {
@@ -1785,7 +1882,9 @@ h3 {
   flex-direction: column;
   gap: 0.1rem;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: 1rem max(1rem, env(safe-area-inset-right))
+    max(2rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.78rem;
@@ -1877,7 +1976,10 @@ h3 {
 
 @media (min-width: 40rem) {
   .screen {
-    padding: 2.25rem 1.5rem 3rem;
+    padding: max(2.25rem, env(safe-area-inset-top))
+      max(1.5rem, env(safe-area-inset-right))
+      max(3rem, env(safe-area-inset-bottom))
+      max(1.5rem, env(safe-area-inset-left));
   }
 
   .start-panel {

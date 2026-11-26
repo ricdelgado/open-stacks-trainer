@@ -60,6 +60,7 @@ describe("schema migration", () => {
       endless: false,
       language: "en",
       appearance: "system",
+      installCardDismissed: false,
       statsSections: {
         practiceDays: true,
         recentMisses: true,

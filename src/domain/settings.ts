@@ -20,12 +20,19 @@ export const DEFAULT_SETTINGS_TOGGLES: SettingsToggles = {
   endless: false,
   language: "en",
   appearance: "system",
+  installCardDismissed: false,
   statsSections: DEFAULT_STATS_SECTIONS,
 };
 
-export function withDefaultAppearance(settings: Settings): Settings {
-  if (settings.appearance !== undefined) return settings;
-  return { ...settings, appearance: "system" };
+export function withDefaultSettings(settings: Settings): Settings {
+  let next = settings;
+  if (next.appearance === undefined) {
+    next = { ...next, appearance: "system" };
+  }
+  if (next.installCardDismissed === undefined) {
+    next = { ...next, installCardDismissed: false };
+  }
+  return next;
 }
 
 export function withSettings(

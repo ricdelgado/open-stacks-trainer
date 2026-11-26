@@ -4,7 +4,7 @@ A free, static, browser-only trainer for memorized card stacks. Train **Mnemonic
 
 **Live site:** https://ricdelgado.github.io/open-stacks-trainer/
 
-**Install it:** open the live site, then use **Add to Home Screen** on Android/Chrome or **Share → Add to Home Screen** on iOS. After the first load it opens and trains offline.
+**Install it:** open the live site and use the **Install as app** card on the menu when it appears, or **Add to Home Screen** on Android/Chrome / **Share → Add to Home Screen** on iOS. After the first load it opens and trains offline.
 
 ## Built with AI
 

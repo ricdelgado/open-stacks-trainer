@@ -1,5 +1,5 @@
 import { builtInStacks } from "../data/stacks";
-import { withDefaultAppearance } from "./settings";
+import { withDefaultSettings } from "./settings";
 import { formatLocalDate } from "./scoring";
 import { isRecord } from "./app-state";
 import { migrateState } from "./migrate";
@@ -156,7 +156,7 @@ export function parseBackup(value: unknown): BackupParseResult {
     ok: true,
     state: {
       ...migration.state,
-      settings: withDefaultAppearance(migration.state.settings),
+      settings: withDefaultSettings(migration.state.settings),
     },
   };
 }

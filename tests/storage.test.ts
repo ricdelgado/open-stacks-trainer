@@ -130,6 +130,25 @@ describe("app storage", () => {
     expect(storage.values.get(STORAGE_KEY)).toBe(raw);
   });
 
+  it("defaults a missing install-card dismissal without rewriting storage", () => {
+    const storage = new MemoryStorage();
+    const state = createDefaultState();
+    const legacy = {
+      ...state,
+      settings: { ...state.settings },
+    };
+    delete (legacy.settings as { installCardDismissed?: unknown })
+      .installCardDismissed;
+    const raw = JSON.stringify(legacy);
+    storage.values.set(STORAGE_KEY, raw);
+
+    const result = new AppStore(storage).load();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.settings.installCardDismissed).toBe(false);
+    expect(storage.values.get(STORAGE_KEY)).toBe(raw);
+  });
+
   it("accepts the current schema version", () => {
     const storage = new MemoryStorage();
     storage.values.set(

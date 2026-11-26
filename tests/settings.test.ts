@@ -82,4 +82,11 @@ describe("settings updates", () => {
     state = withSettings(state, { appearance: "dark" });
     expect(state.settings.appearance).toBe("dark");
   });
+
+  it("defaults the install card to visible and persists dismissal", () => {
+    let state = createDefaultState();
+    expect(state.settings.installCardDismissed).toBe(false);
+    state = withSettings(state, { installCardDismissed: true });
+    expect(state.settings.installCardDismissed).toBe(true);
+  });
 });

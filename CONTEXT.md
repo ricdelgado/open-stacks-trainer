@@ -145,7 +145,7 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Import** — paste 52 cards in notation or a stack export JSON, validate, name, save as a custom stack.
 
-**Settings** — the whole-app settings area reached from the bottom of the menu. It holds Language and Appearance (Light / Dark / System). Training settings are a collapsible panel on the menu under Direction and hold the persisted Reinforcement, Accelerate (with threshold), and Endless toggles; Accelerate is unavailable for Quartets. Changes save immediately.
+**Settings** — the whole-app settings area reached from the bottom of the menu. It holds Language and Appearance (Light / Dark / System). The install card dismissal is persisted as `settings.installCardDismissed`; it is not a Settings control. Training settings are a collapsible panel on the menu under Direction and hold the persisted Reinforcement, Accelerate (with threshold), and Endless toggles; Accelerate is unavailable for Quartets. Changes save immediately.
 
 **View** — the read-only 1–52 order of a stack, with creator credit and export.
 

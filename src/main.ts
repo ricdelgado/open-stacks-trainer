@@ -8,5 +8,5 @@ if (!root) {
   throw new Error("App root not found.");
 }
 
-startApp(root);
 initPwa();
+startApp(root);

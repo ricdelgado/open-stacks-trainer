@@ -3,6 +3,7 @@ import { DIRECTIONS, type Settings } from "../domain/types";
 import { strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
 import { icon } from "../ui/icons";
+import { mountInstallCard } from "../ui/install-card";
 import { openHelpDialog } from "../ui/help-dialog";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import {
@@ -234,7 +235,20 @@ export const renderMenu: Screen = (root, context) => {
   }
 
   modeGroup.append(modeList);
-  root.append(modeGroup);
+  const installHost = el("div", "install-card-host");
+  root.append(modeGroup, installHost);
+
+  const installCleanup = mountInstallCard(installHost, {
+    dismissed: context.state.settings.installCardDismissed ?? false,
+    onDismiss() {
+      const result = context.updateSettings({ installCardDismissed: true });
+      if (!result.ok) {
+        return { ok: false, message: storageMessage(result.reason) };
+      }
+      context.refresh();
+      return { ok: true };
+    },
+  });
 
   const bottom = el("div", "menu-bottom-actions");
   const statsLink = link(
@@ -253,6 +267,7 @@ export const renderMenu: Screen = (root, context) => {
   root.append(bottom);
 
   return () => {
+    installCleanup();
     if (helpDialog) {
       helpDialog.close();
       helpDialog = null;

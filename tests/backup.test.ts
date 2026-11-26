@@ -126,6 +126,18 @@ describe("backup export and restore", () => {
     expect(result.state.settings.appearance).toBe("system");
   });
 
+  it("defaults a missing install-card dismissal in an older v2 backup", () => {
+    const backup = backupFor(stateWithPractice());
+    const settings = { ...backup.settings };
+    delete (settings as { installCardDismissed?: unknown })
+      .installCardDismissed;
+
+    const result = parseBackup({ ...backup, settings });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.settings.installCardDismissed).toBe(false);
+  });
+
   it("migrates a schema v1 backup into schema v2", () => {
     const v1 = {
       format: "open-stacks-trainer-backup",

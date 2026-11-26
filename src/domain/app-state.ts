@@ -133,6 +133,8 @@ export function isSettings(value: unknown): value is Settings {
     typeof value.language === "string" &&
     value.language.length > 0 &&
     (value.appearance === undefined || isAppearance(value.appearance)) &&
+    (value.installCardDismissed === undefined ||
+      typeof value.installCardDismissed === "boolean") &&
     (value.statsSections === undefined || isStatsSections(value.statsSections))
   );
 }
