@@ -8,7 +8,7 @@ import {
 } from "./domain/session";
 import { withSettings } from "./domain/settings";
 import { withoutStackStats } from "./domain/stats-selection";
-import type { AppState, Direction, Mode } from "./domain/types";
+import type { AppState, Appearance, Direction, Mode } from "./domain/types";
 import { parseRoute, type Route } from "./router";
 import { renderEditor } from "./screens/editor";
 import { renderImport } from "./screens/import";
@@ -22,7 +22,11 @@ import type {
 } from "./screens/screen";
 import { renderStackView } from "./screens/stack-view";
 import { renderStats } from "./screens/stats";
-import { renderSettings, renderSettingsLanguage } from "./screens/settings";
+import {
+  renderSettings,
+  renderSettingsAppearance,
+  renderSettingsLanguage,
+} from "./screens/settings";
 import { renderSummary } from "./screens/summary";
 import { renderTraining } from "./screens/training";
 import { SessionRunner } from "./session/runner";
@@ -34,6 +38,7 @@ import {
 } from "./storage/app-store";
 import { setLanguage, strings } from "./strings";
 import { el, focusMainHeading, link } from "./ui/elements";
+import { applyAppearance, watchSystemTheme } from "./ui/theme";
 
 interface ScreenDefinition {
   screen: Screen;
@@ -64,6 +69,8 @@ function titleFor(route: Route): string {
       return strings.documentTitles.settings;
     case "settings-language":
       return strings.documentTitles.settingsLanguage;
+    case "settings-appearance":
+      return strings.documentTitles.settingsAppearance;
   }
 }
 
@@ -91,6 +98,8 @@ function definitionFor(route: Route): ScreenDefinition {
       return { screen: renderSettings, title: titleFor(route) };
     case "settings-language":
       return { screen: renderSettingsLanguage, title: titleFor(route) };
+    case "settings-appearance":
+      return { screen: renderSettingsAppearance, title: titleFor(route) };
   }
 }
 
@@ -174,6 +183,32 @@ export function startApp(appRoot: HTMLElement): void {
     progress: SessionProgress;
     averageTenths: number | null;
   } | null = null;
+
+  let systemThemeCleanup: (() => void) | null = null;
+  let watchedAppearance: Appearance | null = null;
+
+  const currentAppearance = (): Appearance =>
+    state.settings.appearance ?? "system";
+
+  const applyCurrentTheme = (): void => {
+    applyAppearance(currentAppearance());
+  };
+
+  const syncThemeWatcher = (): void => {
+    const appearance = currentAppearance();
+    if (systemThemeCleanup && watchedAppearance === appearance) return;
+    systemThemeCleanup?.();
+    systemThemeCleanup = null;
+    watchedAppearance = appearance;
+    if (appearance === "system") {
+      systemThemeCleanup = watchSystemTheme(applyCurrentTheme);
+    }
+  };
+
+  const refreshTheme = (): void => {
+    applyCurrentTheme();
+    syncThemeWatcher();
+  };
 
   if (loaded.ok && normalized.changed) {
     const result = store.save(state);
@@ -315,6 +350,7 @@ export function startApp(appRoot: HTMLElement): void {
 
   const render = (moveFocus: boolean): void => {
     setLanguage(state.settings.language);
+    refreshTheme();
 
     if (cleanup) {
       cleanup();
@@ -548,6 +584,15 @@ export function startApp(appRoot: HTMLElement): void {
   window.addEventListener("hashchange", () => {
     render(true);
   });
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      systemThemeCleanup?.();
+      systemThemeCleanup = null;
+    },
+    { once: true },
+  );
 
   render(true);
 }

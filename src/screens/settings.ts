@@ -1,7 +1,19 @@
+import type { Appearance } from "../domain/types";
 import { availableLanguages, languageName, strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
+
+function appearanceLabel(appearance: Appearance): string {
+  switch (appearance) {
+    case "light":
+      return strings.settingsPage.appearanceLight;
+    case "dark":
+      return strings.settingsPage.appearanceDark;
+    case "system":
+      return strings.settingsPage.appearanceSystem;
+  }
+}
 
 export const renderSettings: Screen = (root) => {
   root.className = "screen screen--settings";
@@ -20,7 +32,12 @@ export const renderSettings: Screen = (root) => {
     el("span", "nav-card__title", strings.settingsPage.language),
     el("span", "nav-card__hint", strings.settingsPage.languageHint),
   );
-  nav.append(language);
+  const appearance = link("#/settings/appearance", "", "nav-card");
+  appearance.append(
+    el("span", "nav-card__title", strings.settingsPage.appearance),
+    el("span", "nav-card__hint", strings.settingsPage.appearanceHint),
+  );
+  nav.append(language, appearance);
 
   root.append(title, lead, back, nav);
 };
@@ -73,6 +90,64 @@ export const renderSettingsLanguage: Screen = (root, context) => {
       "field__label",
       strings.settingsPage.languageCurrent(
         languageName(context.state.settings.language),
+      ),
+    ),
+    list,
+    status,
+  );
+};
+
+export const renderSettingsAppearance: Screen = (root, context) => {
+  root.className = "screen screen--settings";
+
+  const title = el("h1", "screen-title", strings.headings.settingsAppearance);
+  const lead = el("p", "screen-lead", strings.settingsPage.appearanceLead);
+  const back = link(
+    "#/settings",
+    strings.common.backToSettings,
+    "button button--secondary settings-back",
+  );
+
+  const status = el("div", "form-status");
+  status.setAttribute("aria-live", "polite");
+
+  const currentAppearance = context.state.settings.appearance ?? "system";
+  const list = el("div", "mode-list language-list");
+  const choices: readonly Appearance[] = ["light", "dark", "system"];
+  for (const appearance of choices) {
+    const current = currentAppearance === appearance;
+    const name = appearanceLabel(appearance);
+    const choice = button(
+      strings.settingsPage.appearanceOption(name, current),
+      current
+        ? "button button--primary language-option"
+        : "button button--secondary language-option",
+    );
+    choice.setAttribute("aria-pressed", current ? "true" : "false");
+    if (current) {
+      choice.setAttribute("aria-current", "true");
+    }
+    choice.addEventListener("click", () => {
+      status.replaceChildren();
+      const result = context.updateSettings({ appearance });
+      if (!result.ok) {
+        showStatus(status, storageMessage(result.reason));
+        return;
+      }
+      context.refresh();
+    });
+    list.append(choice);
+  }
+
+  root.append(
+    title,
+    lead,
+    back,
+    el(
+      "p",
+      "field__label",
+      strings.settingsPage.appearanceCurrent(
+        appearanceLabel(currentAppearance),
       ),
     ),
     list,

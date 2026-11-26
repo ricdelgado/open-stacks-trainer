@@ -4,6 +4,7 @@ import { strings } from "../strings";
 import { confirmAction } from "../ui/confirm";
 import { createCardFace } from "../ui/card-face";
 import { button, el, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen, TrainingView } from "./screen";
 
@@ -164,6 +165,7 @@ export const renderTraining: Screen = (root, context) => {
         "button button--primary button--wide",
       );
       answer.dataset.action = "answer";
+      answer.prepend(icon("reveal"));
       answer.addEventListener("click", reveal);
       controls.append(answer);
     } else {
@@ -172,6 +174,7 @@ export const renderTraining: Screen = (root, context) => {
         "button button--secondary button--wide",
       );
       missed.dataset.action = "missed";
+      missed.prepend(icon("cross"));
       missed.addEventListener("click", () => grade(false));
 
       const gotIt = button(
@@ -179,6 +182,7 @@ export const renderTraining: Screen = (root, context) => {
         "button button--primary button--wide",
       );
       gotIt.dataset.action = "got-it";
+      gotIt.prepend(icon("check"));
       gotIt.addEventListener("click", () => grade(true));
 
       controls.append(missed, gotIt);

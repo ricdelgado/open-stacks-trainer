@@ -8,6 +8,7 @@ import { strings } from "../strings";
 import { createCardFace } from "../ui/card-face";
 import { downloadJson } from "../ui/download";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import type { Screen } from "./screen";
 
 function findStack(
@@ -54,6 +55,7 @@ export function renderStackView(id: string): Screen {
       strings.stackViewPage.export,
       "button button--secondary",
     );
+    exportButton.prepend(icon("export"));
     exportButton.addEventListener("click", () => {
       status.replaceChildren();
       downloadJson(
@@ -67,6 +69,7 @@ export function renderStackView(id: string): Screen {
       strings.stackViewPage.back,
       "button button--secondary",
     );
+    back.prepend(icon("back"));
     actions.append(exportButton, back);
     root.append(actions, status);
 

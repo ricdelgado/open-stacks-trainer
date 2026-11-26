@@ -75,4 +75,11 @@ describe("settings updates", () => {
     expect(state.settings.accelerate).toBe(true);
     expect(state.settings.accelerateThresholdTenths).toBe(20);
   });
+
+  it("defaults appearance to system and persists a choice", () => {
+    let state = createDefaultState();
+    expect(state.settings.appearance).toBe("system");
+    state = withSettings(state, { appearance: "dark" });
+    expect(state.settings.appearance).toBe("dark");
+  });
 });

@@ -1,4 +1,5 @@
 import { builtInStacks } from "../data/stacks";
+import { withDefaultAppearance } from "./settings";
 import { formatLocalDate } from "./scoring";
 import { isRecord } from "./app-state";
 import { migrateState } from "./migrate";
@@ -151,5 +152,11 @@ export function parseBackup(value: unknown): BackupParseResult {
   const nameError = validateCustomStackNames(migration.state.customStacks);
   if (nameError) return { ok: false, error: nameError };
 
-  return { ok: true, state: migration.state };
+  return {
+    ok: true,
+    state: {
+      ...migration.state,
+      settings: withDefaultAppearance(migration.state.settings),
+    },
+  };
 }

@@ -9,7 +9,8 @@ export type Route =
   | { name: "stack-view"; id: string }
   | { name: "import" }
   | { name: "settings" }
-  | { name: "settings-language" };
+  | { name: "settings-language" }
+  | { name: "settings-appearance" };
 
 function decodeId(value: string): string | null {
   try {
@@ -43,6 +44,9 @@ export function parseRoute(hash: string): Route {
     }
     if (second === "language" && third === undefined) {
       return { name: "settings-language" };
+    }
+    if (second === "appearance" && third === undefined) {
+      return { name: "settings-appearance" };
     }
   }
 

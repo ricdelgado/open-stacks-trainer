@@ -1,5 +1,6 @@
 import { isCardCode } from "./cards";
 import {
+  isAppearance,
   isDirection,
   isMode,
   type AppState,
@@ -131,6 +132,7 @@ export function isSettings(value: unknown): value is Settings {
     typeof value.endless === "boolean" &&
     typeof value.language === "string" &&
     value.language.length > 0 &&
+    (value.appearance === undefined || isAppearance(value.appearance)) &&
     (value.statsSections === undefined || isStatsSections(value.statsSections))
   );
 }

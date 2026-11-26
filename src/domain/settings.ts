@@ -19,8 +19,14 @@ export const DEFAULT_SETTINGS_TOGGLES: SettingsToggles = {
   accelerateThresholdTenths: DEFAULT_ACCELERATE_THRESHOLD_TENTHS,
   endless: false,
   language: "en",
+  appearance: "system",
   statsSections: DEFAULT_STATS_SECTIONS,
 };
+
+export function withDefaultAppearance(settings: Settings): Settings {
+  if (settings.appearance !== undefined) return settings;
+  return { ...settings, appearance: "system" };
+}
 
 export function withSettings(
   state: AppState,

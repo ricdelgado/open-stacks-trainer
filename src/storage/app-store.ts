@@ -1,5 +1,8 @@
 import { migrateState } from "../domain/migrate";
-import { DEFAULT_SETTINGS_TOGGLES } from "../domain/settings";
+import {
+  DEFAULT_SETTINGS_TOGGLES,
+  withDefaultAppearance,
+} from "../domain/settings";
 import type { AppState } from "../domain/types";
 
 export const STORAGE_KEY = "open-stacks-trainer";
@@ -111,8 +114,13 @@ export class AppStore {
       }
     }
 
+    const state: AppState = {
+      ...migration.state,
+      settings: withDefaultAppearance(migration.state.settings),
+    };
+
     this.issue = null;
-    return { ok: true, state: migration.state, issue: null };
+    return { ok: true, state, issue: null };
   }
 
   getIssue(): StorageIssue | null {

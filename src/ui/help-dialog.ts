@@ -1,5 +1,6 @@
 import { strings } from "../strings";
 import { button, el } from "./elements";
+import { icon } from "./icons";
 
 export function openHelpDialog(): HTMLDialogElement {
   const dialog = el("dialog", "help-dialog");
@@ -10,6 +11,7 @@ export function openHelpDialog(): HTMLDialogElement {
   const title = el("h2", "help-dialog__title", strings.help.title);
   title.id = "help-dialog-title";
   const close = button(strings.help.close, "button button--secondary");
+  close.prepend(icon("close"));
   close.addEventListener("click", () => {
     dialog.close();
   });

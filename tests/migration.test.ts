@@ -59,6 +59,7 @@ describe("schema migration", () => {
       accelerateThresholdTenths: 10,
       endless: false,
       language: "en",
+      appearance: "system",
       statsSections: {
         practiceDays: true,
         recentMisses: true,

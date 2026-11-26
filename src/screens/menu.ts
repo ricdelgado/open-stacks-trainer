@@ -2,6 +2,7 @@ import { builtInStacks } from "../data/stacks";
 import { DIRECTIONS, type Settings } from "../domain/types";
 import { strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import { openHelpDialog } from "../ui/help-dialog";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import {
@@ -17,11 +18,32 @@ export const renderMenu: Screen = (root, context) => {
   const header = el("header", "menu-hero");
   const title = el("h1", "menu-title", strings.appTitle);
   const tagline = el("p", "menu-tagline", strings.tagline);
+  const titleRow = el("div", "menu-title-row");
+  titleRow.append(title);
+
+  const streakCount =
+    context.state.stats[context.state.settings.selectedStackId]?.[
+      context.state.settings.mode
+    ]?.currentStreak ?? 0;
+  if (streakCount > 0) {
+    const badge = el("span", "streak-badge");
+    badge.setAttribute(
+      "aria-label",
+      strings.menu.currentStreak(streakCount),
+    );
+    badge.append(
+      icon("bolt"),
+      el("span", "streak-badge__value", String(streakCount)),
+    );
+    titleRow.append(badge);
+  }
+
   const settings = link(
     "#/settings",
     strings.menu.settings,
-    "button button--secondary button--small menu-settings",
+    "button button--secondary menu-settings",
   );
+  settings.prepend(icon("settings"));
 
   let helpDialog: HTMLDialogElement | null = null;
   const help = button(
@@ -39,7 +61,7 @@ export const renderMenu: Screen = (root, context) => {
     );
   });
 
-  header.append(title, tagline);
+  header.append(titleRow, tagline);
   root.append(header);
 
   renderStorageNotice(root, context);
@@ -52,6 +74,7 @@ export const renderMenu: Screen = (root, context) => {
     strings.menu.startTraining,
     "button button--primary button--large",
   );
+  start.prepend(icon("train"));
   start.addEventListener("click", () => {
     context.startSession();
   });
@@ -130,6 +153,9 @@ export const renderMenu: Screen = (root, context) => {
     strings.settingsPage.trainingSettings,
   );
   trainingSummary.setAttribute("aria-expanded", "false");
+  const chevron = icon("chevron");
+  chevron.classList.add("training-settings__chevron");
+  trainingSummary.append(chevron);
   trainingSettings.append(
     trainingSummary,
     createTrainingSettings(context, formStatus),
@@ -181,7 +207,11 @@ export const renderMenu: Screen = (root, context) => {
       if (!input.checked) return;
       applySettings({ mode: choice.value });
     });
-    option.append(input, el("span", "mode-option__name", choice.label));
+    option.append(
+      input,
+      el("span", "mode-option__mark"),
+      el("span", "mode-option__name", choice.label),
+    );
     modeList.append(option);
   }
 
@@ -199,7 +229,7 @@ export const renderMenu: Screen = (root, context) => {
     input.disabled = true;
     const text = el("span", "mode-option__name", name);
     const badge = el("span", "badge", strings.menu.later);
-    option.append(input, text, badge);
+    option.append(input, el("span", "mode-option__mark"), text, badge);
     modeList.append(option);
   }
 
@@ -207,16 +237,18 @@ export const renderMenu: Screen = (root, context) => {
   root.append(modeGroup);
 
   const bottom = el("div", "menu-bottom-actions");
-  const statsLink = link("#/stats", "", "nav-card");
-  statsLink.append(
-    el("span", "nav-card__title", strings.menu.stats),
-    el("span", "nav-card__hint", strings.menu.statsHint),
+  const statsLink = link(
+    "#/stats",
+    strings.menu.stats,
+    "button button--secondary menu-nav-button",
   );
-  const stacksLink = link("#/my-stacks", "", "nav-card");
-  stacksLink.append(
-    el("span", "nav-card__title", strings.menu.myStacks),
-    el("span", "nav-card__hint", strings.menu.myStacksHint),
+  statsLink.prepend(icon("stats"));
+  const stacksLink = link(
+    "#/my-stacks",
+    strings.menu.myStacks,
+    "button button--secondary menu-nav-button",
   );
+  stacksLink.prepend(icon("stacks"));
   bottom.append(statsLink, stacksLink, help, settings);
   root.append(bottom);
 

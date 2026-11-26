@@ -33,7 +33,7 @@ The original design interview and prompt plan were produced by Qwen4-Max High. T
 - **Custom stacks:** build one in a phone-friendly grid editor, or paste-import 52 cards. Export and re-import as JSON.
 - **Backup and restore:** export all stats, settings, and custom stacks, restore on another browser.
 - **Private by design:** everything stays in `localStorage`; there are no network requests after the assets load and no account, cookies, or analytics.
-- **Mobile-first:** large tap targets, no horizontal scrolling, a minimal light or dark interface, no image assets.
+- **Mobile-first:** large tap targets, no horizontal scrolling, a warm light or dark interface, and inline SVG icons instead of image assets.
 
 Position 1 is the **top** of the face-down deck; position 52 is the bottom.
 
@@ -46,6 +46,10 @@ Position 1 is the **top** of the face-down deck; position 52 is the bottom.
 Only the published card orders are used. No book text, routines, or diagrams are reproduced. The orders are verified against multiple published sources and protected by checksums; see [`data/SOURCES.md`](data/SOURCES.md).
 
 Si Stebbins is not included because it is cyclic and needs a different training model.
+
+## Typeface
+
+**Source Serif 4** is by Adobe, licensed under the SIL Open Font License 1.1. See [`public/fonts/SourceSerif4-OFL.txt`](public/fonts/SourceSerif4-OFL.txt).
 
 ## Development
 

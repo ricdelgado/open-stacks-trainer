@@ -112,6 +112,24 @@ describe("app storage", () => {
     expect(result.state.settings.statsSections).toBeUndefined();
   });
 
+  it("defaults a missing appearance without rewriting storage on load", () => {
+    const storage = new MemoryStorage();
+    const state = createDefaultState();
+    const legacy = {
+      ...state,
+      settings: { ...state.settings },
+    };
+    delete (legacy.settings as { appearance?: unknown }).appearance;
+    const raw = JSON.stringify(legacy);
+    storage.values.set(STORAGE_KEY, raw);
+
+    const result = new AppStore(storage).load();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.settings.appearance).toBe("system");
+    expect(storage.values.get(STORAGE_KEY)).toBe(raw);
+  });
+
   it("accepts the current schema version", () => {
     const storage = new MemoryStorage();
     storage.values.set(

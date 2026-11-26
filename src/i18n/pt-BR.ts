@@ -19,6 +19,7 @@ export const ptBR = {
     viewStack: "Baralho — Open Stacks Trainer",
     settings: "Configurações — Open Stacks Trainer",
     settingsLanguage: "Idioma — Open Stacks Trainer",
+    settingsAppearance: "Aparência — Open Stacks Trainer",
   },
 
   menu: {
@@ -36,9 +37,8 @@ export const ptBR = {
     modeCyclic: "Baralhos cíclicos",
     later: "depois",
     stats: "Estatísticas",
-    statsHint: "Sequências, precisão, dias de treino e erros recentes.",
     myStacks: "Meus baralhos",
-    myStacksHint: "Baralhos incluídos e os seus.",
+    currentStreak: (count: number) => `Sequência atual: ${count}`,
   },
 
   headings: {
@@ -52,6 +52,7 @@ export const ptBR = {
     stackView: "Baralho",
     settings: "Configurações",
     settingsLanguage: "Idioma",
+    settingsAppearance: "Aparência",
   },
 
   cards: {
@@ -186,7 +187,7 @@ export const ptBR = {
   },
 
   settingsPage: {
-    lead: "Escolha o idioma do app. Mais configurações virão depois.",
+    lead: "Escolha o idioma e a aparência do app.",
     trainingSettings: "Configurações de treino",
     language: "Idioma",
     languageHint: "Escolha o idioma da interface.",
@@ -195,6 +196,16 @@ export const ptBR = {
     languageCurrent: (name: string) => `Idioma atual: ${name}`,
     languageOption: (name: string, current: boolean) =>
       current ? `${name} — atual` : name,
+    appearance: "Aparência",
+    appearanceHint: "Escolha Claro, Escuro ou Sistema.",
+    appearanceLead:
+      "Escolha a aparência do app. Sistema segue a configuração do seu dispositivo.",
+    appearanceCurrent: (name: string) => `Aparência atual: ${name}`,
+    appearanceOption: (name: string, current: boolean) =>
+      current ? `${name} — atual` : name,
+    appearanceLight: "Claro",
+    appearanceDark: "Escuro",
+    appearanceSystem: "Sistema",
     reinforcement: "Reforço",
     reinforcementHint:
       "Cartas que você errar voltam com mais frequência até você acertar cinco vezes seguidas.",

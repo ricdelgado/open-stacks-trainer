@@ -10,6 +10,7 @@ import {
 } from "../domain/stack-validation";
 import { strings } from "../strings";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import { renderStorageNotice } from "../ui/storage-notice";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
@@ -123,6 +124,7 @@ export const renderImport: Screen = (root, context) => {
     "button button--primary button--wide",
     strings.importPage.submit,
   );
+  submit.prepend(icon("import"));
   submit.type = "submit";
 
   form.append(nameField, fileField, cardsField, submit, status);
@@ -133,6 +135,7 @@ export const renderImport: Screen = (root, context) => {
     strings.common.backToMyStacks,
     "button button--secondary",
   );
+  back.prepend(icon("back"));
   root.append(back);
 
   textarea.addEventListener("input", () => {

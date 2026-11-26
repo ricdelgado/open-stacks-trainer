@@ -10,6 +10,10 @@ export const MODES = ["basic", "card-plus-3"] as const;
 
 export type Mode = (typeof MODES)[number];
 
+export const APPEARANCES = ["light", "dark", "system"] as const;
+
+export type Appearance = (typeof APPEARANCES)[number];
+
 export const DEFAULT_ACCELERATE_THRESHOLD_TENTHS = 10;
 
 export const REINFORCEMENT_CLEAR_STREAK = 5;
@@ -29,6 +33,7 @@ export interface Settings {
   accelerateThresholdTenths: number;
   endless: boolean;
   language: string;
+  appearance?: Appearance;
   statsSections?: StatsSections;
 }
 
@@ -90,4 +95,10 @@ export function isDirection(value: unknown): value is Direction {
 
 export function isMode(value: unknown): value is Mode {
   return typeof value === "string" && MODES.includes(value as Mode);
+}
+
+export function isAppearance(value: unknown): value is Appearance {
+  return (
+    typeof value === "string" && APPEARANCES.includes(value as Appearance)
+  );
 }

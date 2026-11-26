@@ -13,6 +13,7 @@ describe("hash router", () => {
     ["#/settings", "settings"],
     ["#/settings/training", "settings"],
     ["#/settings/language", "settings-language"],
+    ["#/settings/appearance", "settings-appearance"],
     ["#/stacks/new", "stack-new"],
   ])("maps %s to %s", (hash, name) => {
     expect(parseRoute(hash).name).toBe(name);

@@ -39,6 +39,7 @@ import { cardAccessibleLabel } from "../ui/card-labels";
 import { confirmAction } from "../ui/confirm";
 import { downloadJson } from "../ui/download";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
@@ -322,7 +323,9 @@ function renderMisses(modeStats: ModeStats): HTMLElement {
         strings.statsPage.missMeta(miss.position, formatTimestamp(miss.at)),
       ),
     );
-    item.append(createCardFace(miss.card, "small"), details);
+    const marker = icon("cross");
+    marker.classList.add("miss-marker");
+    item.append(marker, createCardFace(miss.card, "small"), details);
     misses.append(item);
   }
   return misses;
@@ -381,6 +384,7 @@ export const renderStats: Screen = (root, context) => {
     strings.common.backToMenu,
     "button button--secondary stats-back stats-back--top",
   );
+  backTop.prepend(icon("back"));
 
   root.append(heading, lead, backTop);
   renderStorageNotice(root, context);
@@ -409,6 +413,7 @@ export const renderStats: Screen = (root, context) => {
       strings.backup.exportMyData,
       "button button--secondary",
     );
+    exportButton.prepend(icon("export"));
     exportButton.addEventListener("click", () => {
       status.replaceChildren();
       const now = new Date();
@@ -471,6 +476,7 @@ export const renderStats: Screen = (root, context) => {
       strings.backup.restoreFromFile,
       "button button--secondary",
     );
+    restoreButton.prepend(icon("import"));
     restoreButton.addEventListener("click", () => {
       fileInput.click();
     });
@@ -479,6 +485,7 @@ export const renderStats: Screen = (root, context) => {
       strings.backup.deleteAllData,
       "button button--danger",
     );
+    deleteAll.prepend(icon("trash"));
     deleteAll.addEventListener("click", () => {
       status.replaceChildren();
       if (!confirmAction(strings.backup.deleteAllConfirmOne)) return;
@@ -504,6 +511,7 @@ export const renderStats: Screen = (root, context) => {
     strings.common.backToMenu,
     "button button--secondary stats-back",
   );
+  backBottom.prepend(icon("back"));
 
   if (practiced.length === 0) {
     root.append(
@@ -616,6 +624,7 @@ export const renderStats: Screen = (root, context) => {
       strings.statsPage.deleteTrainingData,
       "button button--danger stats-delete",
     );
+    remove.prepend(icon("trash"));
     remove.addEventListener("click", () => {
       status.replaceChildren();
       const name = descriptor?.name ?? stack.name;

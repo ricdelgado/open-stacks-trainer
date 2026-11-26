@@ -18,6 +18,7 @@ export const en = {
     viewStack: "Stack — Open Stacks Trainer",
     settings: "Settings — Open Stacks Trainer",
     settingsLanguage: "Language — Open Stacks Trainer",
+    settingsAppearance: "Appearance — Open Stacks Trainer",
   },
 
   menu: {
@@ -35,9 +36,8 @@ export const en = {
     modeCyclic: "Cyclic stacks",
     later: "later",
     stats: "Stats",
-    statsHint: "Streaks, accuracy, practice days, and recent misses.",
     myStacks: "My Stacks",
-    myStacksHint: "Built-in stacks and your own stacks.",
+    currentStreak: (count: number) => `Current streak: ${count}`,
   },
 
   headings: {
@@ -51,6 +51,7 @@ export const en = {
     stackView: "Stack",
     settings: "Settings",
     settingsLanguage: "Language",
+    settingsAppearance: "Appearance",
   },
 
   cards: {
@@ -179,7 +180,7 @@ export const en = {
   },
 
   settingsPage: {
-    lead: "Choose the app language. More app settings are coming later.",
+    lead: "Choose the app language and appearance.",
     trainingSettings: "Training settings",
     language: "Language",
     languageHint: "Choose the language for the interface.",
@@ -187,6 +188,16 @@ export const en = {
     languageCurrent: (name: string) => `Current language: ${name}`,
     languageOption: (name: string, current: boolean) =>
       current ? `${name} — current` : name,
+    appearance: "Appearance",
+    appearanceHint: "Choose Light, Dark, or System.",
+    appearanceLead:
+      "Choose the app appearance. System follows your device setting.",
+    appearanceCurrent: (name: string) => `Current appearance: ${name}`,
+    appearanceOption: (name: string, current: boolean) =>
+      current ? `${name} — current` : name,
+    appearanceLight: "Light",
+    appearanceDark: "Dark",
+    appearanceSystem: "System",
     reinforcement: "Reinforcement",
     reinforcementHint:
       "Cards you miss come back more often until you answer them correctly five times in a row.",

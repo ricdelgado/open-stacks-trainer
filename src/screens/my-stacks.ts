@@ -8,6 +8,7 @@ import { strings } from "../strings";
 import { confirmAction } from "../ui/confirm";
 import { downloadJson } from "../ui/download";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon, type IconName } from "../ui/icons";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
@@ -29,8 +30,14 @@ function stackRow(
   return row;
 }
 
-function actionLink(href: string, label: string): HTMLAnchorElement {
-  return link(href, label, "button button--secondary button--small");
+function actionLink(
+  href: string,
+  label: string,
+  iconName?: IconName,
+): HTMLAnchorElement {
+  const node = link(href, label, "button button--secondary button--small");
+  if (iconName) node.prepend(icon(iconName));
+  return node;
 }
 
 export const renderMyStacks: Screen = (root, context) => {
@@ -47,18 +54,19 @@ export const renderMyStacks: Screen = (root, context) => {
   status.setAttribute("aria-live", "polite");
 
   const toolbar = el("div", "stacks-toolbar");
-  toolbar.append(
-    link(
-      "#/stacks/new",
-      strings.myStacksPage.create,
-      "button button--primary",
-    ),
-    link(
-      "#/import",
-      strings.myStacksPage.import,
-      "button button--secondary",
-    ),
+  const create = link(
+    "#/stacks/new",
+    strings.myStacksPage.create,
+    "button button--primary",
   );
+  create.prepend(icon("plus"));
+  const importStack = link(
+    "#/import",
+    strings.myStacksPage.import,
+    "button button--secondary",
+  );
+  importStack.prepend(icon("import"));
+  toolbar.append(create, importStack);
   root.append(toolbar, status);
 
   const builtInHeading = el(
@@ -73,6 +81,7 @@ export const renderMyStacks: Screen = (root, context) => {
         actionLink(
           `#/stacks/${encodeURIComponent(stack.id)}/view`,
           strings.myStacksPage.view,
+          "reveal",
         ),
       ]),
     );
@@ -87,14 +96,13 @@ export const renderMyStacks: Screen = (root, context) => {
   root.append(customHeading);
 
   if (context.state.customStacks.length === 0) {
-    root.append(
-      el("p", "stats-empty", strings.myStacksPage.emptyCustom),
-      link(
-        "#/",
-        strings.common.backToMenu,
-        "button button--secondary stacks-back",
-      ),
+    const back = link(
+      "#/",
+      strings.common.backToMenu,
+      "button button--secondary stacks-back",
     );
+    back.prepend(icon("back"));
+    root.append(el("p", "stats-empty", strings.myStacksPage.emptyCustom), back);
     return;
   }
 
@@ -128,16 +136,19 @@ export const renderMyStacks: Screen = (root, context) => {
     const view = actionLink(
       `#/stacks/${encodeURIComponent(stack.id)}/view`,
       strings.myStacksPage.view,
+      "reveal",
     );
     const edit = actionLink(
       `#/stacks/${encodeURIComponent(stack.id)}/edit`,
       strings.myStacksPage.edit,
+      "edit",
     );
 
     const exportButton = button(
       strings.myStacksPage.export,
       "button button--secondary button--small",
     );
+    exportButton.prepend(icon("export"));
     exportButton.setAttribute(
       "aria-label",
       `${strings.myStacksPage.export} ${stack.name}`,
@@ -150,6 +161,7 @@ export const renderMyStacks: Screen = (root, context) => {
       strings.myStacksPage.delete,
       "button button--danger button--small",
     );
+    deleteButton.prepend(icon("trash"));
     deleteButton.setAttribute(
       "aria-label",
       `${strings.myStacksPage.delete} ${stack.name}`,
@@ -168,11 +180,11 @@ export const renderMyStacks: Screen = (root, context) => {
     );
   }
   root.append(customList);
-  root.append(
-    link(
-      "#/",
-      strings.common.backToMenu,
-      "button button--secondary stacks-back",
-    ),
+  const back = link(
+    "#/",
+    strings.common.backToMenu,
+    "button button--secondary stacks-back",
   );
+  back.prepend(icon("back"));
+  root.append(back);
 };

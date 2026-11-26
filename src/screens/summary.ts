@@ -2,6 +2,7 @@ import { accuracyPercent } from "../domain/scoring";
 import { getLocale, strings } from "../strings";
 import { createCardFace } from "../ui/card-face";
 import { button, el, link, showStatus } from "../ui/elements";
+import { icon } from "../ui/icons";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
 
@@ -77,7 +78,9 @@ export const renderSummary: Screen = (root, context) => {
         el("span", "miss-item__position", strings.summary.positionLine(miss.position)),
         el("span", "miss-item__direction", strings.directions[miss.direction]),
       );
-      item.append(createCardFace(miss.card, "small"), details);
+      const marker = icon("cross");
+      marker.classList.add("miss-marker");
+      item.append(marker, createCardFace(miss.card, "small"), details);
       list.append(item);
     }
     missed.append(list);
@@ -88,6 +91,7 @@ export const renderSummary: Screen = (root, context) => {
     strings.actions.trainAgain,
     "button button--primary button--wide",
   );
+  again.prepend(icon("train"));
   again.addEventListener("click", () => {
     context.trainAgain();
   });
