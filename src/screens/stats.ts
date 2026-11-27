@@ -46,6 +46,7 @@ import { confirmAction } from "../ui/confirm";
 import { downloadJson } from "../ui/download";
 import { button, el, link, showStatus } from "../ui/elements";
 import { icon } from "../ui/icons";
+import { renderPracticeCalendar } from "../ui/practice-calendar";
 import { renderFlash, renderStorageNotice } from "../ui/storage-notice";
 import { storageMessage } from "../ui/storage-messages";
 import type { Screen } from "./screen";
@@ -559,6 +560,9 @@ export const renderStats: Screen = (root, context) => {
   root.append(heading, lead, backTop);
   renderStorageNotice(root, context);
   renderFlash(root, context);
+  root.append(
+    renderPracticeCalendar({ stats: context.state.stats, now: new Date() }),
+  );
 
   const status = el("div", "form-status");
   status.setAttribute("aria-live", "polite");

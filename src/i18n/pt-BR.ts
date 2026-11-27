@@ -230,6 +230,23 @@ export const ptBR = {
       `${distances} · ${at}`,
   },
 
+  practiceCalendar: {
+    heading: "Calendário de treino",
+    weekdays: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    range: (start: string, end: string) => `${start} – ${end}`,
+    showMore: "Mostrar mais",
+    less: "Menos",
+    more: "Mais",
+    answered: "Respondidas",
+    correct: "Corretas",
+    accuracy: "Precisão",
+    empty:
+      "Ainda não há treino. Conclua uma sessão e seus dias aparecerão aqui.",
+    dayLabel: (date: string, answered: number, correct: number) =>
+      `${date}: ${answered} respondidas, ${correct} corretas`,
+    dayLabelEmpty: (date: string) => `${date}: sem treino`,
+  },
+
   settingsPage: {
     lead: "Escolha o idioma e a aparência do app.",
     trainingSettings: "Configurações de treino",

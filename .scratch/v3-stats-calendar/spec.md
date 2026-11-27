@@ -9,9 +9,10 @@ The Stats page lists practice days as text, which makes a practice habit hard to
 Add a global **Practice calendar** at the top of the Stats page:
 
 - seven columns, Monday to Sunday, weeks as rows going down, newest week at the bottom;
-- the last 26 weeks by default, with a **Show earlier** control;
+- the last 4 weeks at first, with a small **Show more** control that adds 4 weeks at a time up to 26 weeks;
+- a collapsible section heading, expanded by default;
 - five intensity levels of the amber accent (one empty plus four steps), scaled to the personal busiest day in the visible window;
-- tapping or focusing a day shows its date, answers, and correct count;
+- tapping or focusing a day shows its date, answered, correct, and accuracy; empty days show dashes;
 - aggregates every stack and every mode;
 - reads the existing `practiceDays` data, so there is no schema change;
 - works in the light and dark themes.
@@ -46,8 +47,8 @@ Add a global **Practice calendar** at the top of the Stats page:
 - Output: a grid model with, per day: `date` (`YYYY-MM-DD`), `answered`, `correct`, `level` (0–4), and grid coordinates (week index, weekday index Monday=0).
 - Sum `answered` and `correct` per date across every `stats[stackId][mode].practiceDays`. A date appears at most once per mode, so the calendar sums across modes.
 - Use local calendar dates exactly as recorded (`formatLocalDate`); never re-interpret time zones.
-- The window ends with the current week. Start with the last 26 weeks: from the Monday 25 weeks before this week's Monday through today. Always start on a Monday so columns align.
-- Future days in the current week are rendered as empty, non-interactive placeholders so the final row is complete.
+- The window ends with the current week and starts on a Monday so columns align. The caller chooses 1–26 visible weeks; the UI starts with 4 and shows up to 26.
+- Future days in the current week are rendered as non-interactive placeholders so the final row is complete.
 - Days before any recorded practice are still shown as empty within the window.
 
 ### Intensity model
@@ -56,20 +57,20 @@ Add a global **Practice calendar** at the top of the Stats page:
 - Level 0 for a day with zero answers (the track color).
 - For a practiced day, `ratio = answered / maxAnswered`; level = 1 when `ratio ≤ 0.25`, 2 when `≤ 0.5`, 3 when `≤ 0.75`, otherwise 4.
 - Four amber steps plus the empty level; the steps are the same accent in both themes.
-- Recompute levels when the window expands (so **Show earlier** may recolor the grid). If `maxAnswered` is 0, every day is level 0.
+- Recompute levels when the window expands (so **Show more** may recolor the grid). If `maxAnswered` is 0, every day is level 0.
 
 ### Layout and interaction
 
-- Section heading **Practice calendar**, placed at the top of `renderStats`, above the existing stack/mode figures. It is global, not per stack or per mode.
+- Section heading **Practice calendar**, placed at the top of `renderStats`, above the existing stack/mode figures. It is global, not per stack or per mode. The heading toggles the section open and closed and starts expanded.
 - A weekday header row (Mon–Sun, localized single letters or short names), then weeks as rows downward, newest last.
-- The section subtitle shows the visible range, for example `Jun – Nov 2026`, localized.
-- Each practiced day is a `<button>` with an accessible name such as "26 Nov 2026: 34 answered, 30 correct". Empty days are non-focusable placeholders. Future days are disabled and `aria-hidden`.
+- The section subtitle shows the visible range, for example `Oct – Nov 2026`, localized.
+- Each non-future day is a `<button>`. Practiced days have an accessible name such as "26 Nov 2026: 34 answered, 30 correct"; empty days say "26 Nov 2026: no practice". Future days are disabled and `aria-hidden`.
 - Visual cell: a rounded square (`--radius-cell` = 6px), colored by level. A focus ring uses the standard focus token.
-- Tapping or focusing a day updates an inline details panel below the grid (not a tooltip, not a modal): date, answered, correct, and accuracy. Default selection: today, or the most recent practiced day if today has none.
-- **Show earlier** expands the window by 26 more weeks per activation, up to the earliest recorded practice day (and no further). The control is hidden when no earlier data exists.
+- Tapping or focusing a day updates an inline details panel below the grid (not a tooltip, not a modal): date, answered, correct, and accuracy. Empty days show `—` for answered, correct, and accuracy. Default selection: today, or the most recent practiced day if today has none.
+- **Show more** starts with 4 visible weeks and adds 4 weeks per activation, up to 26 weeks. The control is hidden at 26 weeks.
 - A small legend shows **Less** → **More** with the five swatches, localized.
-- UI state (expanded window, selected day) is in-memory only; it does not persist.
-- At 320 px, seven columns yield roughly 38–40 px wide cells. Cells are at least 40 px wide and 44 px tall, growing at 375 px and above. The 44×44 tap-target rule applies to primary controls; a strict 44 px width for a seven-column chart would force horizontal scrolling, which is forbidden. The inline details panel is the primary inspection target, and every cell is keyboard reachable. This is a deliberate, documented exception for a dense visualization.
+- UI state (visible weeks, selected day, collapsed section) is in-memory only; it does not persist.
+- At 320 px, seven columns yield roughly 38–40 px wide cells. Cells are at least 40 px wide and 44 px tall, growing at 375 px and above. The 44×44 tap-target rule applies to primary controls; a strict 44 px width for a seven-column chart would force horizontal scrolling, which is forbidden. The inline details panel is the primary inspection target, and every non-future cell is keyboard reachable. This is a deliberate, documented exception for a dense visualization.
 
 ### Placement and existing stats
 
@@ -80,7 +81,7 @@ Add a global **Practice calendar** at the top of the Stats page:
 ### Theming and localization
 
 - Use the UI-refresh tokens. Level 0 uses `--surface-soft` (the track); levels 1–4 use the amber accent at roughly 28%, 50%, 75%, and 100% strength, legible in both themes. Labels use `--ink` and `--muted`.
-- New strings go to the central strings module and are complete in `en` and `pt-BR`: heading, weekday labels, range, **Show earlier**, **Less**/**More**, details labels, empty state, and accessible-name templates.
+- New strings go to the central strings module and are complete in `en` and `pt-BR`: heading, weekday labels, range, **Show more**, **Less**/**More**, details labels, empty state, and accessible-name templates.
 - The i18n key-parity test must pass.
 
 ### Empty state
@@ -92,13 +93,14 @@ Add a global **Practice calendar** at the top of the Stats page:
 - Pure aggregation tests with an injected `today`:
   - sums across multiple stacks and modes on the same date;
   - ignores modes without practice;
-  - window starts on a Monday and covers 26 weeks ending with the current week;
+  - the window starts on a Monday and ends with the current week;
+  - a 4-week window covers 28 days; 8, 12, 16, 20, and 24 weeks each add 4 weeks; 26 weeks is the cap;
   - includes today; handles Sunday and Monday boundaries;
   - handles month and year rollover and a leap day;
   - future days in the current week are marked non-interactive.
-- Intensity tests: zeros map to level 0; the busiest day maps to level 4; boundaries at 25/50/75% map to 1/2/3; `maxAnswered = 0` yields all zeros; recompute after expansion.
-- Expansion tests: **Show earlier** adds 26 weeks; hidden when the earliest practice day is already visible; stops at the earliest day.
-- Selection/detail tests: default selection is today or the latest practiced day; selection produces the correct details text inputs.
+- Intensity tests: zeros map to level 0; the busiest day maps to level 4; boundaries at 25/50/75% map to 1/2/3; `maxAnswered = 0` yields all zeros; recompute after the window grows.
+- Window tests: 4-week start; 4-week steps to 26; cap at 26; levels recompute against the visible maximum.
+- Selection/detail tests: default selection is today or the latest practiced day; selection produces the correct details text inputs; empty days show `—` for answered, correct, and accuracy.
 - i18n key-parity tests pass for the new keys.
 - DOM smoke at 320 px, 375 px, and desktop: no horizontal scroll; cells at least 40×44 px at 320; keyboard focus updates the details panel; both themes are readable; the empty state renders.
 - No schema or backup changes, so storage, migration, and backup tests remain unchanged.

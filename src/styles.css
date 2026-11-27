@@ -1240,6 +1240,241 @@ h3 {
   margin-top: 0.75rem;
 }
 
+.practice-calendar {
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.practice-calendar__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-inline: 1rem;
+}
+
+.practice-calendar__titles {
+  min-width: 0;
+  flex: 1;
+}
+
+.practice-calendar__title {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.practice-calendar__toggle {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-cell);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.practice-calendar__toggle:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.practice-calendar__marker::before {
+  content: "▸";
+  font-size: 0.8rem;
+}
+
+.practice-calendar__toggle[aria-expanded="true"] .practice-calendar__marker::before {
+  content: "▾";
+}
+
+.practice-calendar__range {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.practice-calendar__show-more-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
+.practice-calendar__body {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.practice-calendar__body[hidden] {
+  display: none;
+}
+
+.practice-calendar__show-more[hidden] {
+  display: none;
+}
+
+.practice-calendar__weekdays,
+.practice-calendar__grid {
+  display: grid;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: 1px;
+  row-gap: 4px;
+}
+
+.practice-calendar__weekdays {
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.practice-calendar__day {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-cell);
+  background: var(--surface-soft);
+}
+
+button.practice-calendar__day {
+  cursor: pointer;
+}
+
+button.practice-calendar__day:not(:disabled):hover {
+  border-color: var(--line-strong);
+}
+
+.practice-calendar__day:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.practice-calendar__day[aria-pressed="true"] {
+  border-color: var(--ink);
+}
+
+.practice-calendar__day--future {
+  opacity: 0.35;
+}
+
+.practice-calendar__level-0 {
+  background: var(--surface-soft);
+}
+
+.practice-calendar__level-1 {
+  background: color-mix(in srgb, var(--accent) 28%, var(--surface-soft));
+}
+
+.practice-calendar__level-2 {
+  background: color-mix(in srgb, var(--accent) 50%, var(--surface-soft));
+}
+
+.practice-calendar__level-3 {
+  background: color-mix(in srgb, var(--accent) 75%, var(--surface-soft));
+}
+
+.practice-calendar__level-4 {
+  background: var(--accent);
+}
+
+.practice-calendar__details {
+  margin-inline: 1rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-cell);
+  background: var(--surface-soft);
+}
+
+.practice-calendar__details-date {
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.practice-calendar__details-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.25rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.practice-calendar__details-item {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.practice-calendar__details-label {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.practice-calendar__details-value {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-calendar__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem 0.75rem;
+  padding-inline: 1rem;
+}
+
+.practice-calendar__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.practice-calendar__legend-label {
+  margin-inline: 0.1rem;
+}
+
+.practice-calendar__swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.practice-calendar__empty {
+  padding-inline: 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.practice-calendar__empty[hidden] {
+  display: none;
+}
+
 .stats-mode-tabs {
   display: flex;
   flex-wrap: wrap;

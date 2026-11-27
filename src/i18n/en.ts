@@ -223,6 +223,23 @@ export const en = {
       `${distances} · ${at}`,
   },
 
+  practiceCalendar: {
+    heading: "Practice calendar",
+    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    range: (start: string, end: string) => `${start} – ${end}`,
+    showMore: "Show more",
+    less: "Less",
+    more: "More",
+    answered: "Answered",
+    correct: "Correct",
+    accuracy: "Accuracy",
+    empty:
+      "No practice yet. Finish a session and your days will appear here.",
+    dayLabel: (date: string, answered: number, correct: number) =>
+      `${date}: ${answered} answered, ${correct} correct`,
+    dayLabelEmpty: (date: string) => `${date}: no practice`,
+  },
+
   settingsPage: {
     lead: "Choose the app language and appearance.",
     trainingSettings: "Training settings",
