@@ -163,6 +163,15 @@ function isStatsSections(value: unknown): boolean {
   );
 }
 
+function isStatsSelection(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.stackId === "string" &&
+    value.stackId.length > 0 &&
+    isMode(value.mode)
+  );
+}
+
 export function isSettings(value: unknown): value is Settings {
   return (
     isRecord(value) &&
@@ -178,7 +187,9 @@ export function isSettings(value: unknown): value is Settings {
     (value.appearance === undefined || isAppearance(value.appearance)) &&
     (value.installCardDismissed === undefined ||
       typeof value.installCardDismissed === "boolean") &&
-    (value.statsSections === undefined || isStatsSections(value.statsSections))
+    (value.statsSections === undefined || isStatsSections(value.statsSections)) &&
+    (value.statsSelection === undefined ||
+      isStatsSelection(value.statsSelection))
   );
 }
 

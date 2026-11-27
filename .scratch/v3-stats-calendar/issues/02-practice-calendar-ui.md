@@ -25,3 +25,4 @@
 
 - Human review after the first implementation: keep the section collapsible; show four weeks at a time with a small **Show more** button that adds four weeks up to 26; make empty days selectable and show `—` for answered, correct, and accuracy.
 - Updated the UI and the domain window option to match. Verified the four-week start, 4→8→12→16→20→24→26 stepping, hidden button at 26, collapse toggle, empty-day details, and 320/375/desktop widths with no horizontal scroll.
+- Follow-up bug: the Stats stack/mode selection reset to the most recently practiced stack on re-entry. It now persists as `settings.statsSelection`, resolves against practiced data, and survives navigation, reload, backup, and restore.

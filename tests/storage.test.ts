@@ -53,6 +53,24 @@ describe("app storage", () => {
     });
   });
 
+  it("loads a saved stats selection", () => {
+    const storage = new MemoryStorage();
+    const state = createDefaultState();
+    state.settings.statsSelection = {
+      stackId: "aronson",
+      mode: "card-plus-3",
+    };
+    storage.values.set(STORAGE_KEY, JSON.stringify(state));
+
+    const result = new AppStore(storage).load();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.settings.statsSelection).toEqual({
+      stackId: "aronson",
+      mode: "card-plus-3",
+    });
+  });
+
   it("saves and loads the same state", () => {
     const storage = new MemoryStorage();
     const store = new AppStore(storage);

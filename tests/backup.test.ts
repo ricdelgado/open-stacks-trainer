@@ -79,6 +79,23 @@ describe("backup export and restore", () => {
     expect(result.state).toEqual(state);
   });
 
+  it("round-trips a saved stats selection", () => {
+    const state = stateWithPractice();
+    state.settings.statsSelection = {
+      stackId: "custom-1",
+      mode: "basic",
+    };
+
+    const result = parseBackup(backupFor(state));
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.settings.statsSelection).toEqual({
+      stackId: "custom-1",
+      mode: "basic",
+    });
+  });
+
   it("deep-copies nested mode and card stats", () => {
     const state = stateWithPractice();
     const basic = state.stats["custom-1"]?.basic;

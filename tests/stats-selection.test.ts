@@ -4,6 +4,7 @@ import {
   defaultSelection,
   mostRecentMode,
   practicedStacksFor,
+  resolveStatsSelection,
   shouldShowModeTabs,
   shouldShowStackSelector,
   withoutStackStats,
@@ -115,6 +116,36 @@ describe("stats practiced-stack selection", () => {
       stackId: "mnemonica",
       mode: "card-plus-3",
     });
+  });
+
+  it("uses a persisted stats selection when it is still practiced", () => {
+    const practiced = practicedStacksFor(buildStats(), resolveName);
+    expect(
+      resolveStatsSelection(practiced, {
+        stackId: "aronson",
+        mode: "basic",
+      }),
+    ).toEqual({ stackId: "aronson", mode: "basic" });
+  });
+
+  it("keeps the persisted stack and falls back to its most recent mode", () => {
+    const practiced = practicedStacksFor(buildStats(), resolveName);
+    expect(
+      resolveStatsSelection(practiced, {
+        stackId: "aronson",
+        mode: "card-plus-3",
+      }),
+    ).toEqual({ stackId: "aronson", mode: "basic" });
+  });
+
+  it("falls back to the default when the persisted stack is gone", () => {
+    const practiced = practicedStacksFor(buildStats(), resolveName);
+    expect(
+      resolveStatsSelection(practiced, {
+        stackId: "ghost",
+        mode: "basic",
+      }),
+    ).toEqual({ stackId: "mnemonica", mode: "card-plus-3" });
   });
 
   it("picks the most recent mode and keeps mode order on a tie", () => {

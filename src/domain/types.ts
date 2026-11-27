@@ -27,6 +27,11 @@ export interface StatsSections {
   cards: boolean;
 }
 
+export interface StatsSelection {
+  stackId: string;
+  mode: Mode;
+}
+
 export interface Settings {
   selectedStackId: string;
   direction: Direction;
@@ -39,6 +44,7 @@ export interface Settings {
   appearance?: Appearance;
   installCardDismissed?: boolean;
   statsSections?: StatsSections;
+  statsSelection?: StatsSelection;
 }
 
 export interface CustomStack {

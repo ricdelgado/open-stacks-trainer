@@ -1,4 +1,10 @@
-import { MODES, type Mode, type ModeStats, type StackModes } from "./types";
+import {
+  MODES,
+  type Mode,
+  type ModeStats,
+  type StackModes,
+  type StatsSelection,
+} from "./types";
 
 export interface PracticedMode {
   mode: Mode;
@@ -67,6 +73,28 @@ export function defaultSelection(
   const first = practiced[0];
   if (!first) return null;
   return { stackId: first.stackId, mode: mostRecentMode(first) };
+}
+
+export function resolveStatsSelection(
+  practiced: readonly PracticedStack[],
+  persisted: StatsSelection | undefined,
+): { stackId: string; mode: Mode } | null {
+  if (persisted) {
+    const stack = practiced.find(
+      (entry) => entry.stackId === persisted.stackId,
+    );
+    if (stack) {
+      const hasMode = stack.modes.some(
+        (entry) => entry.mode === persisted.mode,
+      );
+      return {
+        stackId: stack.stackId,
+        mode: hasMode ? persisted.mode : mostRecentMode(stack),
+      };
+    }
+  }
+
+  return defaultSelection(practiced);
 }
 
 export function shouldShowStackSelector(

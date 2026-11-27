@@ -50,6 +50,20 @@ describe("settings updates", () => {
     });
   });
 
+  it("persists the stats stack and mode selection", () => {
+    let state = createDefaultState();
+    expect(state.settings.statsSelection).toBeUndefined();
+
+    state = withSettings(state, {
+      statsSelection: { stackId: "mnemonica", mode: "basic" },
+    });
+
+    expect(state.settings.statsSelection).toEqual({
+      stackId: "mnemonica",
+      mode: "basic",
+    });
+  });
+
   it("persists the reinforcement toggle", () => {
     let state = createDefaultState();
     expect(state.settings.reinforcement).toBe(false);

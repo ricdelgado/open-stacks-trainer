@@ -92,6 +92,10 @@ describe("schema migration", () => {
     const state = createDefaultState();
     state.settings.appearance = "dark";
     state.settings.installCardDismissed = true;
+    state.settings.statsSelection = {
+      stackId: "mnemonica",
+      mode: "basic",
+    };
     state.stats.mnemonica = {
       basic: {
         ...emptyStats("mnemonica"),
@@ -108,6 +112,10 @@ describe("schema migration", () => {
     expect(result.state).toEqual({ ...state, schemaVersion: 3 });
     expect(result.state.settings.appearance).toBe("dark");
     expect(result.state.settings.installCardDismissed).toBe(true);
+    expect(result.state.settings.statsSelection).toEqual({
+      stackId: "mnemonica",
+      mode: "basic",
+    });
     expect(result.state.stats.mnemonica?.basic?.totalAnswered).toBe(1);
     expect(result.state.stats.mnemonica?.quartets).toBeUndefined();
   });

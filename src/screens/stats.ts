@@ -19,9 +19,9 @@ import {
   type CardTableView,
 } from "../domain/card-table";
 import {
-  defaultSelection,
   mostRecentMode,
   practicedStacksFor,
+  resolveStatsSelection,
   shouldShowModeTabs,
   shouldShowStackSelector,
   type PracticedStack,
@@ -567,6 +567,16 @@ export const renderStats: Screen = (root, context) => {
   const status = el("div", "form-status");
   status.setAttribute("aria-live", "polite");
 
+  const persistStatsSelection = (stackId: string, mode: Mode): void => {
+    const result = context.updateSettings({
+      statsSelection: { stackId, mode },
+    });
+    if (!result.ok) {
+      status.replaceChildren();
+      showStatus(status, storageMessage(result.reason));
+    }
+  };
+
   const toggleSection = (key: keyof StatsSections, expanded: boolean): void => {
     const current =
       context.state.settings.statsSections ?? DEFAULT_STATS_SECTIONS;
@@ -697,7 +707,10 @@ export const renderStats: Screen = (root, context) => {
     return;
   }
 
-  const initial = defaultSelection(practiced);
+  const initial = resolveStatsSelection(
+    practiced,
+    context.state.settings.statsSelection,
+  );
   let tableView = createCardTableView(
     initial?.stackId ?? practiced[0]?.stackId ?? "",
     initial?.mode ?? "basic",
@@ -739,6 +752,7 @@ export const renderStats: Screen = (root, context) => {
       tab.addEventListener("click", () => {
         tableView = changeCardTableMode(tableView, entry.mode);
         rankSort = "rank-order";
+        persistStatsSelection(tableView.stackId, tableView.mode);
         renderTabs();
         renderData();
       });
@@ -885,6 +899,7 @@ export const renderStats: Screen = (root, context) => {
         mostRecentMode(next),
       );
       rankSort = "rank-order";
+      persistStatsSelection(tableView.stackId, tableView.mode);
       renderTabs();
       renderData();
     });
