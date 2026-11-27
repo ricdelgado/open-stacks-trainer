@@ -27,6 +27,12 @@ import {
   type PracticedStack,
 } from "../domain/stats-selection";
 import {
+  buildRankRows,
+  isRankSort,
+  sortRankRows,
+  type RankSort,
+} from "../domain/rank-table";
+import {
   REINFORCEMENT_CLEAR_STREAK,
   type AppState,
   type Mode,
@@ -249,6 +255,148 @@ function renderCardTable({
   return content;
 }
 
+interface RankTableOptions {
+  order: readonly string[];
+  stats: ModeStats;
+  sort: RankSort;
+  onSortChange(sort: RankSort): void;
+}
+
+function renderRankTable({
+  order,
+  stats,
+  sort,
+  onSortChange,
+}: RankTableOptions): HTMLElement {
+  const rows = buildRankRows(order, stats);
+
+  const content = el("div", "stats-cards__content");
+  const head = el("div", "stats-cards__head");
+  const lead = el("p", "stats-cards__lead", strings.statsPage.ranksLead);
+  const titleBlock = el("div");
+  titleBlock.append(lead);
+
+  const sortField = el("div", "field stats-sort");
+  const sortLabel = el("label", "field__label", strings.statsPage.sortLabel);
+  sortLabel.htmlFor = "stats-rank-sort";
+  const sortSelect = el("select", "select");
+  sortSelect.id = "stats-rank-sort";
+  const sortOptions: readonly { value: RankSort; label: string }[] = [
+    { value: "rank-order", label: strings.statsPage.sortRankOrder },
+    { value: "reinforcement", label: strings.statsPage.sortReinforcement },
+    { value: "slowest", label: strings.statsPage.sortSlowest },
+    { value: "most-missed", label: strings.statsPage.sortMostMissed },
+    { value: "lowest-streak", label: strings.statsPage.sortLowestStreak },
+  ];
+  for (const option of sortOptions) {
+    const node = el("option", undefined, option.label);
+    node.value = option.value;
+    sortSelect.append(node);
+  }
+  sortSelect.value = sort;
+  sortField.append(sortLabel, sortSelect);
+  head.append(titleBlock, sortField);
+
+  const table = el("table", "stats-table stats-table--ranks");
+  const thead = el("thead");
+  const headerRow = el("tr");
+  const columns: readonly { label: string }[] = [
+    { label: strings.statsPage.columnRank },
+    { label: strings.statsPage.columnFirstCard },
+    { label: strings.statsPage.columnDistances },
+    { label: strings.statsPage.columnStreak },
+    { label: strings.statsPage.columnReinforcement },
+    { label: strings.statsPage.columnTimesMissed },
+    { label: strings.statsPage.columnAverageTime },
+  ];
+  for (const column of columns) {
+    const cell = el("th", undefined, column.label);
+    cell.scope = "col";
+    headerRow.append(cell);
+  }
+  thead.append(headerRow);
+
+  const tbody = el("tbody");
+  const renderRows = (nextSort: RankSort): void => {
+    tbody.replaceChildren();
+    for (const row of sortRankRows(rows, nextSort)) {
+      const item = el("tr", "stats-card-row stats-rank-row");
+      item.tabIndex = 0;
+      item.setAttribute(
+        "aria-label",
+        strings.statsPage.rankRowLabel(
+          strings.quartets.rankNames[row.rank],
+          cardAccessibleLabel(row.firstCard),
+        ),
+      );
+
+      const rank = el(
+        "td",
+        "stats-rank-name",
+        strings.quartets.rankNames[row.rank],
+      );
+      rank.dataset.label = strings.statsPage.shortRank;
+
+      const firstCard = el("td");
+      firstCard.dataset.label = strings.statsPage.shortFirstCard;
+      firstCard.append(createCardFace(row.firstCard, "small"));
+
+      const distances = el(
+        "td",
+        "stats-rank-distances",
+        strings.quartets.distancesLine(row.distances),
+      );
+      distances.dataset.label = strings.statsPage.shortDistances;
+
+      const streak = el("td", undefined, String(row.currentStreak));
+      streak.dataset.label = strings.statsPage.shortStreak;
+
+      const reinforcement = el(
+        "td",
+        undefined,
+        row.reinforcementStreak === null
+          ? strings.summary.emptyValue
+          : strings.statsPage.reinforcementProgress(
+              row.reinforcementStreak,
+              REINFORCEMENT_CLEAR_STREAK,
+            ),
+      );
+      reinforcement.dataset.label = strings.statsPage.shortReinforcement;
+
+      const missed = el("td", undefined, String(row.timesMissed));
+      missed.dataset.label = strings.statsPage.shortTimesMissed;
+
+      const average = el("td", undefined, formatAverageTime(row.averageTenths));
+      average.dataset.label = strings.statsPage.shortAverageTime;
+
+      item.append(
+        rank,
+        firstCard,
+        distances,
+        streak,
+        reinforcement,
+        missed,
+        average,
+      );
+      tbody.append(item);
+    }
+  };
+
+  sortSelect.addEventListener("change", () => {
+    if (!isRankSort(sortSelect.value)) return;
+    onSortChange(sortSelect.value);
+    renderRows(sortSelect.value);
+  });
+
+  table.append(thead, tbody);
+  renderRows(sort);
+
+  const scroll = el("div", "stats-table-scroll");
+  scroll.append(table);
+  content.append(head, scroll);
+  return content;
+}
+
 function figure(label: string, value: string): HTMLElement {
   const block = el("div", "stats-figure");
   block.append(
@@ -330,7 +478,10 @@ function renderMisses(modeStats: ModeStats): HTMLElement {
         el(
           "span",
           "stats-miss__meta",
-          strings.quartets.distancesLine(miss.distances),
+          strings.statsPage.quartetMissMeta(
+            strings.quartets.distancesLine(miss.distances),
+            formatTimestamp(miss.at),
+          ),
         ),
       );
       item.append(marker, createCardFace(miss.firstCard, "small"), details);
@@ -547,6 +698,7 @@ export const renderStats: Screen = (root, context) => {
     initial?.stackId ?? practiced[0]?.stackId ?? "",
     initial?.mode ?? "basic",
   );
+  let rankSort: RankSort = "rank-order";
 
   const currentStack = (): PracticedStack | null =>
     practiced.find((stack) => stack.stackId === tableView.stackId) ??
@@ -582,6 +734,7 @@ export const renderStats: Screen = (root, context) => {
       tab.dataset.mode = entry.mode;
       tab.addEventListener("click", () => {
         tableView = changeCardTableMode(tableView, entry.mode);
+        rankSort = "rank-order";
         renderTabs();
         renderData();
       });
@@ -665,24 +818,36 @@ export const renderStats: Screen = (root, context) => {
     dataHost.append(card);
 
     const order = stackOrderFor(state, stack.stackId);
-    const cards = createCollapsible({
-      title: strings.statsPage.cardsTitle,
+    const quartets = selected.mode === "quartets";
+    const tableSection = createCollapsible({
+      title: quartets
+        ? strings.statsPage.ranksTitle
+        : strings.statsPage.cardsTitle,
       expanded: sections.cards,
       onToggle: (expanded) => toggleSection("cards", expanded),
     });
-    cards.body.append(
-      renderCardTable({
-        order,
-        stats: selected.stats,
-        view: tableView,
-        onSortChange(sort) {
-          tableView = changeCardTableSort(tableView, sort);
-        },
-      }),
+    tableSection.body.append(
+      quartets
+        ? renderRankTable({
+            order,
+            stats: selected.stats,
+            sort: rankSort,
+            onSortChange(sort) {
+              rankSort = sort;
+            },
+          })
+        : renderCardTable({
+            order,
+            stats: selected.stats,
+            view: tableView,
+            onSortChange(sort) {
+              tableView = changeCardTableSort(tableView, sort);
+            },
+          }),
     );
 
     const panel = el("section", "stats-cards");
-    panel.append(cards.heading, cards.body);
+    panel.append(tableSection.heading, tableSection.body);
     tableArea.replaceChildren(panel);
   };
 
@@ -715,6 +880,7 @@ export const renderStats: Screen = (root, context) => {
         next.stackId,
         mostRecentMode(next),
       );
+      rankSort = "rank-order";
       renderTabs();
       renderData();
     });

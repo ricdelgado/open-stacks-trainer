@@ -159,6 +159,7 @@ export const ptBR = {
     seconds: (formatted: string) => `${formatted}s`,
     countOutOf: (count: number, total: number) => `${count} / ${total}`,
     missedCards: "Cartas erradas",
+    missedRanks: "Valores errados",
     noMisses: "Nenhum erro. Sessão limpa.",
     positionLine: (position: number) => `Posição ${position}`,
     percent: (value: number) => `${value}%`,
@@ -192,20 +193,29 @@ export const ptBR = {
     cardsTitle: "Cartas",
     cardsLead:
       "Todas as cartas na ordem do baralho, incluindo as que você ainda não respondeu.",
+    ranksTitle: "Valores",
+    ranksLead: "Todos os quartetos, com a primeira carta e as três distâncias.",
     sortLabel: "Ordenar",
     sortStackOrder: "Ordem do baralho",
+    sortRankOrder: "Ordem dos valores",
     sortReinforcement: "Reforço",
     sortSlowest: "Mais lentas primeiro",
     sortMostMissed: "Mais erradas",
     sortLowestStreak: "Menor sequência",
     columnPosition: "Posição",
     columnCard: "Carta",
+    columnRank: "Valor",
+    columnFirstCard: "Primeira carta",
+    columnDistances: "Distâncias",
     columnStreak: "Sequência atual",
     columnReinforcement: "Reforço",
     columnTimesMissed: "Vezes erradas",
     columnAverageTime: "Tempo médio",
     shortPosition: "Posição",
     shortCard: "Carta",
+    shortRank: "Valor",
+    shortFirstCard: "1ª carta",
+    shortDistances: "Distâncias",
     shortStreak: "Sequência",
     shortReinforcement: "Reforço",
     shortTimesMissed: "Erros",
@@ -214,6 +224,10 @@ export const ptBR = {
       `${current}/${total}`,
     cardRowLabel: (position: number, card: string) =>
       `Posição ${position}, ${card}`,
+    rankRowLabel: (rank: string, firstCard: string) =>
+      `${rank}, primeira carta ${firstCard}`,
+    quartetMissMeta: (distances: string, at: string) =>
+      `${distances} · ${at}`,
   },
 
   settingsPage: {
@@ -256,6 +270,7 @@ export const ptBR = {
         ? "1 carta está acima deste limite."
         : `${count} cartas estão acima deste limite.`,
     endless: "Sem fim",
+    accelerateUnavailable: "A aceleração não está disponível para Quartetos.",
   },
 
   backup: {
@@ -414,11 +429,15 @@ export const ptBR = {
         body: "Ative Sem fim em Configurações de treino no menu. Cada lote tem duas passagens embaralhadas do baralho. A tela de treino mostra Respondidas N, e Sair abre um resumo das respostas dadas.",
       },
       {
-        title: "6. Reveja seu progresso",
-        body: "Uma sessão normal cobre todas as 52 posições uma vez. O resumo mostra o resultado, o tempo médio e as cartas erradas. Estatísticas guarda sequências, dias de treino, erros recentes e uma tabela por carta que você pode ordenar.",
+        title: "6. Quartetos",
+        body: "Quartetos pede um valor por vez. Revele a primeira carta e as três distâncias entre as quatro cartas desse valor. O menu esconde Direção para Quartetos. Reforço e Sem fim funcionam com valores; Aceleração não está disponível. Estatísticas mostra uma tabela por valor para Quartetos.",
       },
       {
-        title: "7. Atalhos de teclado",
+        title: "7. Reveja seu progresso",
+        body: "Uma sessão normal cobre todas as 52 posições uma vez. O resumo mostra o resultado, o tempo médio e as cartas erradas. Estatísticas guarda sequências, dias de treino, erros recentes e uma tabela por carta que você pode ordenar. Para Quartetos, Estatísticas mostra uma tabela por valor.",
+      },
+      {
+        title: "8. Atalhos de teclado",
         body: "Espaço ou Enter revela a resposta. Depois de revelar, 1 ou N significa Errei, e 2 ou Y significa Acertei.",
       },
     ],

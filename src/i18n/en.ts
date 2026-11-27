@@ -155,6 +155,7 @@ export const en = {
     seconds: (formatted: string) => `${formatted}s`,
     countOutOf: (count: number, total: number) => `${count} / ${total}`,
     missedCards: "Missed cards",
+    missedRanks: "Missed ranks",
     noMisses: "No misses. Clean session.",
     positionLine: (position: number) => `Position ${position}`,
     percent: (value: number) => `${value}%`,
@@ -185,20 +186,29 @@ export const en = {
     deleted: (name: string) => `Training data for "${name}" deleted.`,
     cardsTitle: "Cards",
     cardsLead: "Every card in stack order, including cards you have not answered yet.",
+    ranksTitle: "Ranks",
+    ranksLead: "Every quartet, with its first card and three distances.",
     sortLabel: "Sort",
     sortStackOrder: "Stack order",
+    sortRankOrder: "Rank order",
     sortReinforcement: "Reinforcement",
     sortSlowest: "Slowest average first",
     sortMostMissed: "Most missed",
     sortLowestStreak: "Lowest streak",
     columnPosition: "Position",
     columnCard: "Card",
+    columnRank: "Rank",
+    columnFirstCard: "First card",
+    columnDistances: "Distances",
     columnStreak: "Current streak",
     columnReinforcement: "Reinforcement",
     columnTimesMissed: "Times missed",
     columnAverageTime: "Average time",
     shortPosition: "Position",
     shortCard: "Card",
+    shortRank: "Rank",
+    shortFirstCard: "First card",
+    shortDistances: "Distances",
     shortStreak: "Streak",
     shortReinforcement: "Reinf.",
     shortTimesMissed: "Missed",
@@ -207,6 +217,10 @@ export const en = {
       `${current}/${total}`,
     cardRowLabel: (position: number, card: string) =>
       `Position ${position}, ${card}`,
+    rankRowLabel: (rank: string, firstCard: string) =>
+      `${rank}, first card ${firstCard}`,
+    quartetMissMeta: (distances: string, at: string) =>
+      `${distances} · ${at}`,
   },
 
   settingsPage: {
@@ -248,6 +262,7 @@ export const en = {
         ? "1 card is above this threshold."
         : `${count} cards are above this threshold.`,
     endless: "Endless",
+    accelerateUnavailable: "Accelerate is unavailable for Quartets.",
   },
 
   backup: {
@@ -402,11 +417,15 @@ export const en = {
         body: "Turn on Endless in Training settings on the menu. Each batch has two shuffled passes of the stack. The training screen shows Answered N, and Quit opens a summary of the answers you gave.",
       },
       {
-        title: "6. Review your progress",
-        body: "A normal session covers all 52 positions once. The summary shows the result, average time, and the cards you missed. Stats keeps streaks, practice days, recent misses, and a per-card table you can sort.",
+        title: "6. Quartets",
+        body: "Quartets asks for one rank at a time. Reveal the first card and the three distances between the four cards of that rank. The menu hides Direction for Quartets. Reinforcement and Endless work with ranks; Accelerate is unavailable. Stats shows a per-rank table for Quartets.",
       },
       {
-        title: "7. Keyboard shortcuts",
+        title: "7. Review your progress",
+        body: "A normal session covers all 52 positions once. The summary shows the result, average time, and the cards you missed. Stats keeps streaks, practice days, recent misses, and a per-card table you can sort. For Quartets, Stats shows a per-rank table instead.",
+      },
+      {
+        title: "8. Keyboard shortcuts",
         body: "Space or Enter reveals the answer. After reveal, 1 or N means Missed, and 2 or Y means Got it.",
       },
     ],

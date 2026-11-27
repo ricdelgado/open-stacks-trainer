@@ -135,9 +135,16 @@ export function createTrainingSettings(
 
   const accelerateWrap = el("div", "accelerate-settings");
   accelerateWrap.append(accelerateBlock, thresholdField);
-  accelerateWrap.hidden = context.state.settings.mode === "quartets";
+  const quartets = context.state.settings.mode === "quartets";
+  accelerateWrap.hidden = quartets;
+  const accelerateNote = el(
+    "p",
+    "field__hint accelerate-unavailable",
+    strings.settingsPage.accelerateUnavailable,
+  );
+  accelerateNote.hidden = !quartets;
 
-  container.append(reinforcementBlock, accelerateWrap);
+  container.append(reinforcementBlock, accelerateWrap, accelerateNote);
   return container;
 }
 

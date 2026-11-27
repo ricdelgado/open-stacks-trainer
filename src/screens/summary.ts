@@ -66,7 +66,13 @@ export const renderSummary: Screen = (root, context) => {
     ),
   );
 
-  const missedHeading = el("h2", "summary-subtitle", strings.summary.missedCards);
+  const missedHeading = el(
+    "h2",
+    "summary-subtitle",
+    view.mode === "quartets"
+      ? strings.summary.missedRanks
+      : strings.summary.missedCards,
+  );
   const missed = el("div", "summary-misses");
 
   if (view.misses.length === 0) {

@@ -38,6 +38,6 @@
 - Production preview: a quartets grade persists the rank record and miss; Endless shows `Answered 0`/`Answered 1`, `Quit` opens a summary with the rank and distances, and no Accelerate insert appears.
 - Unit coverage includes rank records, timed-only elapsed, five-streak clearing, practice days, miss cap/shape, reinforcement gaps, no Accelerate inserts, 26-rank Endless batches, and batch-boundary rank avoidance.
 
-Ticket 05 (per-rank table, localization, help, README) remains open.
+Ticket 05 delivered the per-rank table, localization, and help.
 
 Human approved tickets 02–04.

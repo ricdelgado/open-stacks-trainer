@@ -221,6 +221,9 @@ export const renderMenu: Screen = (root, context) => {
       const accelerateSettings =
         startPanel.querySelector<HTMLElement>(".accelerate-settings");
       if (accelerateSettings) accelerateSettings.hidden = quartets;
+      const accelerateNote =
+        startPanel.querySelector<HTMLElement>(".accelerate-unavailable");
+      if (accelerateNote) accelerateNote.hidden = !quartets;
       applySettings({ mode: choice.value });
     });
     option.append(
