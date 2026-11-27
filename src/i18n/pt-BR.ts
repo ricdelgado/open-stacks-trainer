@@ -242,9 +242,11 @@ export const ptBR = {
     accuracy: "Precisão",
     empty:
       "Ainda não há treino. Conclua uma sessão e seus dias aparecerão aqui.",
-    dayLabel: (date: string, answered: number, correct: number) =>
+    dayLabel: (date: string, answered: string, correct: string) =>
       `${date}: ${answered} respondidas, ${correct} corretas`,
     dayLabelEmpty: (date: string) => `${date}: sem treino`,
+    legendLabel: (less: string, more: string) =>
+      `Intensidade de treino: ${less} a ${more}`,
   },
 
   settingsPage: {

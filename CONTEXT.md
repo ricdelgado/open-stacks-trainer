@@ -135,9 +135,9 @@ This is the project glossary. Use these terms exactly in code, UI strings, tests
 
 **Training screen** — the active session: progress (`answered/planned total`, or “Answered N” in Endless), current streak, direction label (not shown for Quartets), quiet timer, mode label for Next 3 cards and Quartets, an optional Reinforcement indicator beside the timer, front, Answer, then Missed/Got it after reveal. For Quartets, the front is the rank and the back is the first card, the three distances, and the four positions.
 
-**Stats page** — stack-focused, per mode: a collapsible global **Practice calendar** at the top, then stack selector, mode tabs, per-mode figures, collapsible practice days / recent misses / per-card table, and global backup/restore/delete actions. The table can sort by stack order, Reinforcement, slowest average, most missed, or lowest streak; for Quartets, a per-rank table replaces the per-card table.
+**Stats page** — stack-focused, per mode: a collapsible global **Practice calendar** at the top, then stack selector, mode tabs, per-mode figures, collapsible practice days / recent misses / per-card table, and global backup/restore/delete actions. The selected stack and mode persist across visits. The table can sort by stack order, Reinforcement, slowest average, most missed, or lowest streak; for Quartets, a per-rank table replaces the per-card table.
 
-**Practice calendar** — the global heatmap at the top of Stats; one square per day, weeks as rows, five intensity levels, aggregated across every stack and mode. It shows four weeks at first; **Show more** adds four weeks up to 26. Selecting any non-future day shows its date, answered, correct, and accuracy, with `—` for a day without practice.
+**Practice calendar** — the collapsible global heatmap at the top of Stats; one square per day, weeks as rows, five intensity levels, aggregated across every stack and mode. It shows four weeks at first; **Show more** adds four weeks up to 26. Selecting any non-future day shows its date, answered, correct, and accuracy, with `—` for a day without practice.
 
 **My Stacks** — the stack management screen: built-ins (view only) and customs (view, edit, export, delete), plus Create stack and Import stack.
 

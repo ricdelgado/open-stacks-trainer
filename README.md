@@ -24,7 +24,7 @@ The original design interview and prompt plan were produced by Qwen4-Max High. T
 - **Self-graded with a quiet timer:** reveal the answer, then tap **Got it** or **Missed**. A Got it answer records recall time; no typing, no spaced repetition.
 - **Extra practice:** **Reinforcement** brings missed cards or ranks back, **Accelerate** brings slow cards back above a chosen threshold, and **Endless** continues in batches of two shuffled passes until you quit.
 - **Streaks and stats:** current streak, best streak, accuracy, practice days, recent misses, average time, and a per-card table (per-rank for Quartets) with sorting and reinforcement progress.
-- **Practice calendar:** a global heatmap at the top of Stats shows every practiced day, scaled to your busiest day.
+- **Practice calendar:** a global heatmap at the top of Stats shows four weeks at a time, scaled to your busiest day. **Show more** reveals earlier weeks up to 26.
 - **Light and dark themes:** a warm paper interface in light or dark, with a system-following default and an explicit **Appearance** setting.
 - **Installable and offline:** add the app to your home screen, launch it standalone, and train offline after the first load.
 - **Training settings:** a collapsible panel on the menu holds Reinforcement, Accelerate, and Endless; changes save immediately.

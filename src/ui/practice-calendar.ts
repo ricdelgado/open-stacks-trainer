@@ -55,6 +55,10 @@ function formatMediumDate(date: Date): string {
   return date.toLocaleDateString(getLocale(), { dateStyle: "medium" });
 }
 
+function formatCount(count: number): string {
+  return count.toLocaleString(getLocale());
+}
+
 export function formatCalendarRange(
   calendar: Pick<PracticeCalendar, "startDate" | "endDate">,
 ): string {
@@ -126,8 +130,8 @@ function renderDay(
     day.practiced
       ? strings.practiceCalendar.dayLabel(
           dateLabel,
-          day.answered,
-          day.correct,
+          formatCount(day.answered),
+          formatCount(day.correct),
         )
       : strings.practiceCalendar.dayLabelEmpty(dateLabel),
   );
@@ -195,6 +199,14 @@ export function renderPracticeCalendar({
   details.setAttribute("aria-live", "polite");
 
   const legend = el("div", "practice-calendar__legend");
+  legend.setAttribute("role", "img");
+  legend.setAttribute(
+    "aria-label",
+    strings.practiceCalendar.legendLabel(
+      strings.practiceCalendar.less,
+      strings.practiceCalendar.more,
+    ),
+  );
   legend.append(
     el("span", "practice-calendar__legend-label", strings.practiceCalendar.less),
   );
@@ -222,10 +234,17 @@ export function renderPracticeCalendar({
   body.append(weekdays, grid, details, footer, empty);
   section.append(head, body);
 
+  const updateShowMore = (): void => {
+    const finished = visibleWeeks >= CALENDAR_WEEKS;
+    showMore.hidden = finished;
+    showMoreRow.hidden = finished || !expanded;
+  };
+
   toggle.addEventListener("click", () => {
     expanded = !expanded;
     toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
     body.hidden = !expanded;
+    updateShowMore();
   });
 
   const selectDay = (date: string): void => {
@@ -257,7 +276,7 @@ export function renderPracticeCalendar({
       ? accuracyPercent(day.correct, day.answered)
       : null;
     const value = (count: number): string =>
-      day.practiced ? String(count) : strings.summary.emptyValue;
+      day.practiced ? formatCount(count) : strings.summary.emptyValue;
 
     details.replaceChildren();
     details.append(
@@ -288,7 +307,7 @@ export function renderPracticeCalendar({
     }
 
     range.textContent = formatCalendarRange(calendar);
-    showMore.hidden = visibleWeeks >= CALENDAR_WEEKS;
+    updateShowMore();
     empty.hidden = calendar.hasPractice;
     renderGrid();
     renderDetails();

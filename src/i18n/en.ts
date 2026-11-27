@@ -235,9 +235,11 @@ export const en = {
     accuracy: "Accuracy",
     empty:
       "No practice yet. Finish a session and your days will appear here.",
-    dayLabel: (date: string, answered: number, correct: number) =>
+    dayLabel: (date: string, answered: string, correct: string) =>
       `${date}: ${answered} answered, ${correct} correct`,
     dayLabelEmpty: (date: string) => `${date}: no practice`,
+    legendLabel: (less: string, more: string) =>
+      `Practice intensity: ${less} to ${more}`,
   },
 
   settingsPage: {

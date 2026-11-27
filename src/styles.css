@@ -1310,6 +1310,10 @@ h3 {
   margin-top: 0.4rem;
 }
 
+.practice-calendar__show-more-row[hidden] {
+  display: none;
+}
+
 .practice-calendar__body {
   display: grid;
   gap: 0.7rem;

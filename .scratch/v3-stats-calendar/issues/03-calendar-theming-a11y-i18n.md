@@ -4,15 +4,24 @@
 
 **Blocked by:** `02 — Practice calendar UI`.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Both themes render the grid and legend legibly; level 0 uses the track token; levels 1–4 use the same amber steps in light and dark; labels use the ink and muted tokens.
-- [ ] Focus and keyboard order are logical; every non-future day is reachable and updates the details, including empty days with `—` values; future days are skipped.
-- [ ] Accessible names use the selected locale; the heading and legend are announced; the inline details panel is not a tooltip or modal.
-- [ ] All calendar strings live in the central strings module and are complete in `en` and `pt-BR`: heading, weekday labels, range, **Show more**, **Less**/**More**, detail labels, empty state, and accessible-name templates; the i18n key-parity test passes.
-- [ ] The empty state renders the all-level-0 grid plus a localized “No practice yet…” message and is not hidden.
-- [ ] No user-visible literal lives in the screen; dates, numbers, and percentages use the selected locale.
-- [ ] Manual QA at 320 px, 375 px, and desktop in both themes shows no horizontal scroll, cells at least 40×44 px at 320 px, readable details, and reduced motion respected.
-- [ ] `CONTEXT.md` Practice calendar entry, README feature list, and roadmap are updated, with credits and the AI disclosure unchanged.
-- [ ] No schema, backup, storage, or practice-day recording change is made.
-- [ ] Typecheck, tests, build, and the stack verifier pass.
+- [x] Both themes render the grid and legend legibly; level 0 uses the track token; levels 1–4 use the same amber steps in light and dark; labels use the ink and muted tokens.
+- [x] Focus and keyboard order are logical; every non-future day is reachable and updates the details, including empty days with `—` values; future days are skipped.
+- [x] Accessible names use the selected locale; the heading and legend are announced; the inline details panel is not a tooltip or modal.
+- [x] All calendar strings live in the central strings module and are complete in `en` and `pt-BR`: heading, weekday labels, range, **Show more**, **Less**/**More**, detail labels, empty state, and accessible-name templates; the i18n key-parity test passes.
+- [x] The empty state renders the all-level-0 grid plus a localized “No practice yet…” message and is not hidden.
+- [x] No user-visible literal lives in the screen; dates, numbers, and percentages use the selected locale.
+- [x] Manual QA at 320 px, 375 px, and desktop in both themes shows no horizontal scroll, cells at least 40×44 px at 320 px, readable details, and reduced motion respected.
+- [x] `CONTEXT.md` Practice calendar entry, README feature list, and roadmap are updated, with credits and the AI disclosure unchanged.
+- [x] No schema, backup, storage, or practice-day recording change is made.
+- [x] Typecheck, tests, build, and the stack verifier pass.
+
+## Comments
+
+- Verified light and dark themes at 320 px: level 0 uses `--surface-soft`, levels 1–4 use the same four amber steps, and muted labels remain legible.
+- Added a localized accessible label to the five-swatch legend and localized count formatting in day labels and details.
+- Verified keyboard focus on a practiced and an empty day updates the inline details; future days are disabled and skipped.
+- Verified the empty state: four weeks of level-0 cells plus the localized message, not hidden.
+- Verified `Show more`, the collapse toggle, and the 320/375/desktop layouts with no horizontal scroll.
+- Typecheck, 310 tests, build, and the stack verifier pass.
