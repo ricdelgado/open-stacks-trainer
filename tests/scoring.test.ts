@@ -158,8 +158,8 @@ describe("stats scoring", () => {
     }
 
     expect(stats.recentMisses).toHaveLength(20);
-    expect(stats.recentMisses[0]?.position).toBe(25);
-    expect(stats.recentMisses[19]?.position).toBe(6);
+    expect(stats.recentMisses[0]).toMatchObject({ position: 25 });
+    expect(stats.recentMisses[19]).toMatchObject({ position: 6 });
   });
 
   it("creates a per-card record on a correct answer", () => {

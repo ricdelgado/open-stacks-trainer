@@ -146,6 +146,13 @@ export const renderMenu: Screen = (root, context) => {
   }
 
   directionGroup.append(segments);
+  directionGroup.hidden = context.state.settings.mode === "quartets";
+  const directionNote = el(
+    "p",
+    "field__hint",
+    strings.menu.quartetsNoDirection,
+  );
+  directionNote.hidden = context.state.settings.mode !== "quartets";
 
   const trainingSettings = el("details", "training-settings");
   const trainingSummary = el(
@@ -170,6 +177,7 @@ export const renderMenu: Screen = (root, context) => {
 
   startPanel.append(
     directionGroup,
+    directionNote,
     createEndlessSetting(context, formStatus),
     trainingSettings,
     formStatus,
@@ -192,12 +200,13 @@ export const renderMenu: Screen = (root, context) => {
   modeGroup.append(modeLegend);
   const modeList = el("div", "mode-list");
 
-  const basicChoice = [
+  const modeChoices = [
     { value: "basic", label: strings.menu.modeBasic },
     { value: "card-plus-3", label: strings.menu.modeCardPlus3 },
+    { value: "quartets", label: strings.menu.modeQuartets },
   ] as const;
 
-  for (const choice of basicChoice) {
+  for (const choice of modeChoices) {
     const option = el("label", "mode-option");
     const input = el("input");
     input.type = "radio";
@@ -206,6 +215,12 @@ export const renderMenu: Screen = (root, context) => {
     input.checked = context.state.settings.mode === choice.value;
     input.addEventListener("change", () => {
       if (!input.checked) return;
+      const quartets = choice.value === "quartets";
+      directionGroup.hidden = quartets;
+      directionNote.hidden = !quartets;
+      const accelerateSettings =
+        startPanel.querySelector<HTMLElement>(".accelerate-settings");
+      if (accelerateSettings) accelerateSettings.hidden = quartets;
       applySettings({ mode: choice.value });
     });
     option.append(
@@ -217,7 +232,6 @@ export const renderMenu: Screen = (root, context) => {
   }
 
   const futureModes: readonly string[] = [
-    strings.menu.modeQuartets,
     strings.menu.modeAcaan,
     strings.menu.modeCyclic,
   ];

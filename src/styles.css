@@ -1091,6 +1091,32 @@ h3 {
   color: var(--accent-ink);
 }
 
+.quartet-rank {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 12vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.quartet-distances {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 8vw, 2.2rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.quartet-positions {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .training-controls {
   display: grid;
   gap: 0.6rem;

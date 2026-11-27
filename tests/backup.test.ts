@@ -63,7 +63,7 @@ describe("backup export and restore", () => {
     expect(backup).toMatchObject({
       format: "open-stacks-trainer-backup",
       formatVersion: 1,
-      schemaVersion: 2,
+      schemaVersion: 3,
       exportedAt: new Date(2026, 10, 21, 12, 0, 0).toISOString(),
     });
     expect(backup.customStacks).toEqual(state.customStacks);
@@ -138,7 +138,7 @@ describe("backup export and restore", () => {
     expect(result.state.settings.installCardDismissed).toBe(false);
   });
 
-  it("migrates a schema v1 backup into schema v2", () => {
+  it("migrates a schema v1 backup into schema v3", () => {
     const v1 = {
       format: "open-stacks-trainer-backup",
       formatVersion: 1,
@@ -163,11 +163,59 @@ describe("backup export and restore", () => {
     const result = parseBackup(v1);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.schemaVersion).toBe(2);
+    expect(result.state.schemaVersion).toBe(3);
     expect(result.state.settings.mode).toBe("basic");
     const basic = result.state.stats.mnemonica?.basic;
     expect(basic?.totalAnswered).toBe(20);
     expect(basic?.cards).toEqual({});
+  });
+
+  it("migrates a schema v2 backup into schema v3", () => {
+    const state = stateWithPractice();
+    const backup = { ...backupFor(state), schemaVersion: 2 };
+    const result = parseBackup(backup);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.schemaVersion).toBe(3);
+    expect(result.state.stats["custom-1"]).toEqual(state.stats["custom-1"]);
+  });
+
+  it("round-trips quartet ranks and distances without aliasing", () => {
+    const state = createDefaultState();
+    state.stats.mnemonica = {
+      quartets: {
+        ...emptyStats("mnemonica", "quartets"),
+        totalAnswered: 1,
+        totalCorrect: 1,
+        recentMisses: [
+          {
+            rank: "7",
+            firstCard: "7S",
+            distances: [4, 6, 8],
+            at: "2026-11-21T12:00:00.000Z",
+          },
+        ],
+        ranks: { "7": { ...emptyCardStats(), currentStreak: 1 } },
+      },
+    };
+
+    const backup = backupFor(state);
+    const result = parseBackup(backup);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state).toEqual(state);
+
+    const backupRank = backup.stats.mnemonica?.quartets?.ranks?.["7"];
+    if (backupRank) backupRank.timesMissed = 99;
+    const backupMiss = backup.stats.mnemonica?.quartets?.recentMisses[0];
+    if (backupMiss && "distances" in backupMiss) {
+      (backupMiss.distances as unknown as number[])[0] = 99;
+    }
+    expect(state.stats.mnemonica?.quartets?.ranks?.["7"]?.timesMissed).toBe(0);
+    expect(
+      state.stats.mnemonica?.quartets?.recentMisses[0],
+    ).toMatchObject({ distances: [4, 6, 8] });
   });
 
   it("names the backup file with the local date", () => {
@@ -196,7 +244,7 @@ describe("backup export and restore", () => {
   });
 
   it("refuses a newer schema version", () => {
-    const backup = { ...backupFor(stateWithPractice()), schemaVersion: 3 };
+    const backup = { ...backupFor(stateWithPractice()), schemaVersion: 4 };
     expect(parseBackup(backup)).toEqual({
       ok: false,
       error: { code: "newer-schema" },

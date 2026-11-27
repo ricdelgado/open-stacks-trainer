@@ -26,6 +26,18 @@ function answerDescription(view: TrainingView): string {
       .map((card) => cardAccessibleLabel(card))
       .join(", ");
   }
+  if (view.mode === "quartets") {
+    const rank = view.item.rank;
+    const firstCard = view.item.firstCard ?? view.item.card;
+    const distances = view.item.distances ?? [];
+    const positions = view.item.positions ?? [];
+    return strings.quartets.answerDescription(
+      rank ? strings.quartets.rankNames[rank] : "",
+      cardAccessibleLabel(firstCard),
+      strings.quartets.distancesLine(distances),
+      strings.quartets.positionsLine(positions),
+    );
+  }
   return frontIsPosition(view)
     ? cardAccessibleLabel(view.item.card)
     : strings.training.positionAccessible(view.item.position);
@@ -91,10 +103,17 @@ export const renderTraining: Screen = (root, context) => {
         : strings.training.answeredProgress(view.answered, view.total),
     );
     streak.textContent = strings.training.streak(view.persistedStreak);
-    direction.textContent = strings.directions[view.item.direction];
+    direction.textContent = view.item.direction
+      ? strings.directions[view.item.direction]
+      : "";
+    direction.hidden = view.mode === "quartets";
     modeLabel.textContent =
-      view.mode === "card-plus-3" ? strings.menu.modeCardPlus3 : "";
-    modeLabel.hidden = view.mode !== "card-plus-3";
+      view.mode === "card-plus-3"
+        ? strings.menu.modeCardPlus3
+        : view.mode === "quartets"
+          ? strings.menu.modeQuartets
+          : "";
+    modeLabel.hidden = view.mode === "basic";
     insertLabel.hidden = view.item.insert === undefined;
     insertLabel.textContent =
       view.item.insert === "accelerate"
@@ -110,42 +129,72 @@ export const renderTraining: Screen = (root, context) => {
 
     const pair = el("div", "prompt-pair");
     const frontSide = el("div", "prompt-side");
-    frontSide.append(
-      el(
-        "p",
-        "prompt-side__label",
-        frontIsPosition(view)
-          ? strings.training.positionLabel
-          : strings.training.cardLabel,
-      ),
-      frontIsPosition(view)
-        ? createPositionFace(view.item.position)
-        : createCardFace(view.item.card, "large"),
-    );
-
     const backSide = el("div", "prompt-side prompt-side--answer");
-    if (view.mode === "card-plus-3") {
-      backSide.append(
-        el("p", "prompt-side__label", strings.training.nextThreeLabel),
+
+    if (view.mode === "quartets") {
+      frontSide.append(
+        el("p", "prompt-side__label", strings.quartets.rankLabel),
+        el(
+          "p",
+          "quartet-rank",
+          view.item.rank ? strings.quartets.rankNames[view.item.rank] : "",
+        ),
       );
-      const triple = el("div", "card-triple");
-      for (const card of view.item.nextCards ?? []) {
-        triple.append(createCardFace(card, "small"));
-      }
-      backSide.append(triple);
-    } else {
       backSide.append(
+        el("p", "prompt-side__label", strings.quartets.firstCardLabel),
+        createCardFace(view.item.firstCard ?? view.item.card, "large"),
+        el(
+          "p",
+          "quartet-distances",
+          view.item.distances
+            ? strings.quartets.distancesLine(view.item.distances)
+            : "",
+        ),
+        el(
+          "p",
+          "quartet-positions",
+          view.item.positions
+            ? strings.quartets.positionsLine(view.item.positions)
+            : "",
+        ),
+      );
+    } else {
+      frontSide.append(
         el(
           "p",
           "prompt-side__label",
           frontIsPosition(view)
-            ? strings.training.cardLabel
-            : strings.training.positionLabel,
+            ? strings.training.positionLabel
+            : strings.training.cardLabel,
         ),
         frontIsPosition(view)
-          ? createCardFace(view.item.card, "large")
-          : createPositionFace(view.item.position),
+          ? createPositionFace(view.item.position)
+          : createCardFace(view.item.card, "large"),
       );
+
+      if (view.mode === "card-plus-3") {
+        backSide.append(
+          el("p", "prompt-side__label", strings.training.nextThreeLabel),
+        );
+        const triple = el("div", "card-triple");
+        for (const card of view.item.nextCards ?? []) {
+          triple.append(createCardFace(card, "small"));
+        }
+        backSide.append(triple);
+      } else {
+        backSide.append(
+          el(
+            "p",
+            "prompt-side__label",
+            frontIsPosition(view)
+              ? strings.training.cardLabel
+              : strings.training.positionLabel,
+          ),
+          frontIsPosition(view)
+            ? createCardFace(view.item.card, "large")
+            : createPositionFace(view.item.position),
+        );
+      }
     }
 
     if (!view.revealed) {

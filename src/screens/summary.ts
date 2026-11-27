@@ -34,10 +34,12 @@ export const renderSummary: Screen = (root, context) => {
   const meta = el(
     "p",
     "summary-meta",
-    strings.summary.stackDirection(
-      view.stackName,
-      strings.directions[view.direction],
-    ),
+    view.mode === "quartets"
+      ? view.stackName
+      : strings.summary.stackDirection(
+          view.stackName,
+          strings.directions[view.direction],
+        ),
   );
 
   const stats = el("div", "summary-stats");
@@ -74,13 +76,30 @@ export const renderSummary: Screen = (root, context) => {
     for (const miss of view.misses) {
       const item = el("li", "miss-item");
       const details = el("div", "miss-item__details");
-      details.append(
-        el("span", "miss-item__position", strings.summary.positionLine(miss.position)),
-        el("span", "miss-item__direction", strings.directions[miss.direction]),
-      );
       const marker = icon("cross");
       marker.classList.add("miss-marker");
-      item.append(marker, createCardFace(miss.card, "small"), details);
+
+      if ("rank" in miss) {
+        details.append(
+          el("span", "miss-item__position", strings.quartets.rankNames[miss.rank]),
+          el(
+            "span",
+            "miss-item__direction",
+            strings.quartets.distancesLine(miss.distances),
+          ),
+        );
+        item.append(marker, createCardFace(miss.firstCard, "small"), details);
+      } else {
+        details.append(
+          el(
+            "span",
+            "miss-item__position",
+            strings.summary.positionLine(miss.position),
+          ),
+          el("span", "miss-item__direction", strings.directions[miss.direction]),
+        );
+        item.append(marker, createCardFace(miss.card, "small"), details);
+      }
       list.append(item);
     }
     missed.append(list);

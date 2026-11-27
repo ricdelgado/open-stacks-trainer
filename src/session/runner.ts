@@ -88,6 +88,9 @@ export class SessionRunner {
       card: item.card,
       position: item.position,
       direction: item.direction,
+      rank: item.rank,
+      firstCard: item.firstCard,
+      distances: item.distances,
       correct,
       at,
     };
@@ -97,7 +100,7 @@ export class SessionRunner {
     this.answerRevealed = false;
 
     if (this.index >= this.batch.items.length && this.endless) {
-      const next = this.nextBatch?.(item.card) ?? null;
+      const next = this.nextBatch?.(item.rank ?? item.card) ?? null;
       if (next && next.items.length > 0) {
         this.batch = next;
         this.index = 0;

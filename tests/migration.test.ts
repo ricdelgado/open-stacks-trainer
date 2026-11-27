@@ -49,7 +49,7 @@ describe("schema migration", () => {
     if (!result.ok) return;
 
     expect(result.migrated).toBe(true);
-    expect(result.state.schemaVersion).toBe(2);
+    expect(result.state.schemaVersion).toBe(3);
     expect(result.state.settings).toEqual({
       selectedStackId: "aronson",
       direction: "card-to-position",
@@ -79,7 +79,7 @@ describe("schema migration", () => {
     expect(modes?.["card-plus-3"]).toBeUndefined();
   });
 
-  it("leaves a valid v2 payload unchanged", () => {
+  it("leaves a valid v3 payload unchanged", () => {
     const state = createDefaultState();
     const result = migrateState(state);
     expect(result.ok).toBe(true);
@@ -88,8 +88,32 @@ describe("schema migration", () => {
     expect(result.state).toEqual(state);
   });
 
+  it("migrates a v2 payload to v3 without reordering it", () => {
+    const state = createDefaultState();
+    state.settings.appearance = "dark";
+    state.settings.installCardDismissed = true;
+    state.stats.mnemonica = {
+      basic: {
+        ...emptyStats("mnemonica"),
+        totalAnswered: 1,
+        totalCorrect: 1,
+        cards: { "7D": { ...emptyCardStats(), currentStreak: 1 } },
+      },
+    };
+    const v2 = { ...state, schemaVersion: 2 };
+    const result = migrateState(v2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.migrated).toBe(true);
+    expect(result.state).toEqual({ ...state, schemaVersion: 3 });
+    expect(result.state.settings.appearance).toBe("dark");
+    expect(result.state.settings.installCardDismissed).toBe(true);
+    expect(result.state.stats.mnemonica?.basic?.totalAnswered).toBe(1);
+    expect(result.state.stats.mnemonica?.quartets).toBeUndefined();
+  });
+
   it("refuses a newer schema", () => {
-    expect(migrateState({ ...createDefaultState(), schemaVersion: 3 })).toEqual({
+    expect(migrateState({ ...createDefaultState(), schemaVersion: 4 })).toEqual({
       ok: false,
       reason: "newer-schema",
     });
@@ -115,7 +139,7 @@ describe("schema migration", () => {
   });
 });
 
-describe("schema v2 validation", () => {
+describe("schema v3 validation", () => {
   function stateWithCard(): AppState {
     const state = createDefaultState();
     state.stats.mnemonica = {
@@ -129,8 +153,67 @@ describe("schema v2 validation", () => {
     return state;
   }
 
-  it("accepts a valid v2 payload with per-card records", () => {
+  it("accepts a valid payload with per-card records", () => {
     expect(parseAppState(stateWithCard())).not.toBeNull();
+  });
+
+  it("accepts a quartets bucket with rank records and quartet misses", () => {
+    const state = createDefaultState();
+    state.stats.mnemonica = {
+      quartets: {
+        ...emptyStats("mnemonica", "quartets"),
+        totalAnswered: 1,
+        recentMisses: [
+          {
+            rank: "7",
+            firstCard: "7S",
+            distances: [4, 6, 8],
+            at: "2026-11-21T12:00:00.000Z",
+          },
+        ],
+        ranks: { "7": { ...emptyCardStats(), currentStreak: 1 } },
+      },
+    };
+
+    expect(parseAppState(state)).not.toBeNull();
+  });
+
+  it("rejects card misses in the quartets mode", () => {
+    const state = createDefaultState();
+    state.stats.mnemonica = {
+      quartets: {
+        ...emptyStats("mnemonica", "quartets"),
+        recentMisses: [
+          {
+            card: "7D",
+            position: 7,
+            direction: "position-to-card",
+            at: "2026-11-21T12:00:00.000Z",
+          },
+        ],
+      },
+    };
+
+    expect(parseAppState(state)).toBeNull();
+  });
+
+  it("rejects quartet misses outside the quartets mode", () => {
+    const state = createDefaultState();
+    state.stats.mnemonica = {
+      basic: {
+        ...emptyStats("mnemonica"),
+        recentMisses: [
+          {
+            rank: "7",
+            firstCard: "7S",
+            distances: [4, 6, 8],
+            at: "2026-11-21T12:00:00.000Z",
+          },
+        ],
+      },
+    };
+
+    expect(parseAppState(state)).toBeNull();
   });
 
   it("rejects per-card values that are not safe integers", () => {

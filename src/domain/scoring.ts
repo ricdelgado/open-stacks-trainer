@@ -1,21 +1,40 @@
-import type { AppState, CardStats, Mode, ModeStats } from "./types";
+import type {
+  AppState,
+  CardMissRecord,
+  CardStats,
+  Mode,
+  ModeStats,
+  QuartetMissRecord,
+  RankStats,
+} from "./types";
+import type { Rank } from "./cards";
 import { REINFORCEMENT_CLEAR_STREAK } from "./types";
+import type { QuartetDistances } from "./quartets";
 import type { ItemDirection } from "./session";
 
 export interface AnswerRecord {
   card: string;
   position: number;
-  direction: ItemDirection;
+  direction?: ItemDirection;
+  rank?: Rank;
+  firstCard?: string;
+  distances?: QuartetDistances;
   correct: boolean;
   at: Date;
   elapsedTenths?: number;
 }
 
-export interface SessionMiss {
-  card: string;
-  position: number;
-  direction: ItemDirection;
-}
+export type SessionMiss =
+  | {
+      card: string;
+      position: number;
+      direction: ItemDirection;
+    }
+  | {
+      rank: Rank;
+      firstCard: string;
+      distances: QuartetDistances;
+    };
 
 export interface SessionProgress {
   answered: number;
@@ -44,7 +63,7 @@ export function emptyCardStats(): CardStats {
 }
 
 export function emptyStats(stackId: string, mode: Mode = "basic"): ModeStats {
-  return {
+  const stats: ModeStats = {
     stackId,
     mode,
     currentStreak: 0,
@@ -56,6 +75,8 @@ export function emptyStats(stackId: string, mode: Mode = "basic"): ModeStats {
     recentMisses: [],
     cards: {},
   };
+  if (mode === "quartets") stats.ranks = {};
+  return stats;
 }
 
 export function applyCardAnswer(
@@ -83,16 +104,8 @@ export function applyCardAnswer(
   };
 }
 
-export function applyAnswer(
-  stackId: string,
-  mode: Mode,
-  stats: ModeStats | undefined,
-  answer: AnswerRecord,
-): ModeStats {
-  const base = stats ?? emptyStats(stackId, mode);
+function nextPracticeDays(base: ModeStats, answer: AnswerRecord) {
   const date = formatLocalDate(answer.at);
-  const at = answer.at.toISOString();
-
   const existingDay = base.practiceDays.find((day) => day.date === date);
   const practiceDays = existingDay
     ? base.practiceDays.map((day) =>
@@ -114,10 +127,77 @@ export function applyAnswer(
       ];
 
   practiceDays.sort((left, right) => right.date.localeCompare(left.date));
+  return practiceDays;
+}
 
+function quartetMiss(answer: AnswerRecord, at: string): QuartetMissRecord {
+  if (!answer.rank || !answer.firstCard || !answer.distances) {
+    throw new Error("A quartet answer is missing its rank data.");
+  }
+  return {
+    rank: answer.rank,
+    firstCard: answer.firstCard,
+    distances: answer.distances,
+    at,
+  };
+}
+
+function applyQuartetAnswer(
+  stackId: string,
+  stats: ModeStats | undefined,
+  answer: AnswerRecord,
+): ModeStats {
+  if (!answer.rank) {
+    throw new Error("A quartet answer is missing its rank data.");
+  }
+
+  const base = stats ?? emptyStats(stackId, "quartets");
+  const date = answer.at;
+  const at = date.toISOString();
   const currentStreak = answer.correct ? base.currentStreak + 1 : 0;
-  const recentMisses = answer.correct
-    ? base.recentMisses
+  const recentMisses: QuartetMissRecord[] = answer.correct
+    ? (base.recentMisses as QuartetMissRecord[])
+    : [quartetMiss(answer, at), ...(base.recentMisses as QuartetMissRecord[])].slice(
+        0,
+        20,
+      );
+  const previousRank: RankStats =
+    base.ranks?.[answer.rank] ?? emptyCardStats();
+  const ranks: Partial<Record<Rank, RankStats>> = {
+    ...base.ranks,
+    [answer.rank]: applyCardAnswer(previousRank, answer),
+  };
+
+  return {
+    ...base,
+    stackId,
+    mode: "quartets",
+    currentStreak,
+    bestStreak: Math.max(base.bestStreak, currentStreak),
+    totalAnswered: base.totalAnswered + 1,
+    totalCorrect: base.totalCorrect + (answer.correct ? 1 : 0),
+    lastPracticedAt: at,
+    practiceDays: nextPracticeDays(base, answer),
+    recentMisses,
+    ranks,
+  };
+}
+
+function applyCardModeAnswer(
+  stackId: string,
+  mode: Exclude<Mode, "quartets">,
+  stats: ModeStats | undefined,
+  answer: AnswerRecord,
+): ModeStats {
+  if (!answer.direction) {
+    throw new Error("A card answer is missing its direction.");
+  }
+
+  const base = stats ?? emptyStats(stackId, mode);
+  const at = answer.at.toISOString();
+  const currentStreak = answer.correct ? base.currentStreak + 1 : 0;
+  const recentMisses: CardMissRecord[] = answer.correct
+    ? (base.recentMisses as CardMissRecord[])
     : [
         {
           card: answer.card,
@@ -125,7 +205,7 @@ export function applyAnswer(
           direction: answer.direction,
           at,
         },
-        ...base.recentMisses,
+        ...(base.recentMisses as CardMissRecord[]),
       ].slice(0, 20);
 
   const previousCard = base.cards[answer.card] ?? emptyCardStats();
@@ -143,10 +223,21 @@ export function applyAnswer(
     totalAnswered: base.totalAnswered + 1,
     totalCorrect: base.totalCorrect + (answer.correct ? 1 : 0),
     lastPracticedAt: at,
-    practiceDays,
+    practiceDays: nextPracticeDays(base, answer),
     recentMisses,
     cards,
   };
+}
+
+export function applyAnswer(
+  stackId: string,
+  mode: Mode,
+  stats: ModeStats | undefined,
+  answer: AnswerRecord,
+): ModeStats {
+  return mode === "quartets"
+    ? applyQuartetAnswer(stackId, stats, answer)
+    : applyCardModeAnswer(stackId, mode, stats, answer);
 }
 
 export function averageTenths(
@@ -204,19 +295,29 @@ export function applySessionAnswer(
     };
   }
 
+  let miss: SessionMiss;
+  if (answer.rank && answer.firstCard && answer.distances) {
+    miss = {
+      rank: answer.rank,
+      firstCard: answer.firstCard,
+      distances: answer.distances,
+    };
+  } else if (answer.direction) {
+    miss = {
+      card: answer.card,
+      position: answer.position,
+      direction: answer.direction,
+    };
+  } else {
+    throw new Error("A graded answer is missing its miss data.");
+  }
+
   return {
     ...progress,
     answered: progress.answered + 1,
     missed: progress.missed + 1,
     currentRun: 0,
-    misses: [
-      ...progress.misses,
-      {
-        card: answer.card,
-        position: answer.position,
-        direction: answer.direction,
-      },
-    ],
+    misses: [...progress.misses, miss],
   };
 }
 

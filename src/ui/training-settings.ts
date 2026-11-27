@@ -133,7 +133,11 @@ export function createTrainingSettings(
     el("p", "field__hint", strings.settingsPage.accelerateHint),
   );
 
-  container.append(reinforcementBlock, accelerateBlock, thresholdField);
+  const accelerateWrap = el("div", "accelerate-settings");
+  accelerateWrap.append(accelerateBlock, thresholdField);
+  accelerateWrap.hidden = context.state.settings.mode === "quartets";
+
+  container.append(reinforcementBlock, accelerateWrap);
   return container;
 }
 

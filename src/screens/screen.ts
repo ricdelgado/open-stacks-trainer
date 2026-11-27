@@ -46,6 +46,7 @@ export interface GradeOutcome {
 export interface SessionSummaryView {
   stackId: string;
   stackName: string;
+  mode: Mode;
   direction: Direction;
   answered: number;
   correct: number;

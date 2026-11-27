@@ -1,12 +1,15 @@
 import { isCardCode } from "./cards";
+import type { QuartetDistances } from "./quartets";
 import {
   isAppearance,
   isDirection,
   isMode,
+  isRank,
   type AppState,
   type CardStats,
   type CustomStack,
   type MissRecord,
+  type Mode,
   type ModeStats,
   type PracticeDay,
   type Settings,
@@ -40,17 +43,45 @@ export function isPracticeDay(value: unknown): value is PracticeDay {
   );
 }
 
-export function isMissRecord(value: unknown): value is MissRecord {
+function isQuartetDistances(value: unknown): value is QuartetDistances {
   return (
-    isRecord(value) &&
+    Array.isArray(value) &&
+    value.length === 3 &&
+    value.every(
+      (distance) =>
+        typeof distance === "number" &&
+        Number.isSafeInteger(distance) &&
+        distance >= 1,
+    )
+  );
+}
+
+export function isMissRecord(
+  value: unknown,
+  mode?: Mode,
+): value is MissRecord {
+  if (!isRecord(value) || typeof value.at !== "string") return false;
+
+  const quartetShape =
+    "rank" in value || "firstCard" in value || "distances" in value;
+  if (quartetShape) {
+    if (mode !== undefined && mode !== "quartets") return false;
+    return (
+      isRank(value.rank) &&
+      isCardCode(value.firstCard) &&
+      isQuartetDistances(value.distances)
+    );
+  }
+
+  if (mode === "quartets") return false;
+  return (
     typeof value.card === "string" &&
     typeof value.position === "number" &&
     Number.isInteger(value.position) &&
     value.position >= 1 &&
     value.position <= 52 &&
     (value.direction === "position-to-card" ||
-      value.direction === "card-to-position") &&
-    typeof value.at === "string"
+      value.direction === "card-to-position")
   );
 }
 
@@ -74,11 +105,21 @@ function isCards(value: unknown): value is Record<string, CardStats> {
   );
 }
 
-export function isModeStats(value: unknown): value is ModeStats {
+function isRanks(value: unknown): value is Partial<Record<string, CardStats>> {
   return (
     isRecord(value) &&
+    Object.entries(value).every(
+      ([rank, stats]) => isRank(rank) && isCardStats(stats),
+    )
+  );
+}
+
+export function isModeStats(value: unknown): value is ModeStats {
+  if (!isRecord(value) || !isMode(value.mode)) return false;
+  const mode = value.mode;
+
+  return (
     typeof value.stackId === "string" &&
-    isMode(value.mode) &&
     isSafeCount(value.currentStreak) &&
     isSafeCount(value.bestStreak) &&
     isSafeCount(value.totalAnswered) &&
@@ -88,8 +129,10 @@ export function isModeStats(value: unknown): value is ModeStats {
     Array.isArray(value.practiceDays) &&
     value.practiceDays.every(isPracticeDay) &&
     Array.isArray(value.recentMisses) &&
-    value.recentMisses.every(isMissRecord) &&
-    isCards(value.cards)
+    value.recentMisses.every((miss) => isMissRecord(miss, mode)) &&
+    isCards(value.cards) &&
+    (value.ranks === undefined ||
+      (mode === "quartets" && isRanks(value.ranks)))
   );
 }
 
@@ -154,7 +197,7 @@ export function isCustomStack(value: unknown): value is CustomStack {
 
 export function parseAppState(value: unknown): AppState | null {
   if (!isRecord(value)) return null;
-  if (value.schemaVersion !== 2) return null;
+  if (value.schemaVersion !== 3) return null;
   if (!isSettings(value.settings)) return null;
   if (!Array.isArray(value.customStacks)) return null;
   if (!value.customStacks.every(isCustomStack)) return null;

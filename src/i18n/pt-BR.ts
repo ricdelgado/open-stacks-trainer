@@ -35,6 +35,7 @@ export const ptBR = {
     modeQuartets: "Quartetos",
     modeAcaan: "ACAAN",
     modeCyclic: "Baralhos cíclicos",
+    quartetsNoDirection: "Quartetos não usam direção.",
     later: "depois",
     stats: "Estatísticas",
     myStacks: "Meus baralhos",
@@ -86,6 +87,35 @@ export const ptBR = {
     gotIt: "Acertei",
     trainAgain: "Treinar de novo",
     menu: "Menu",
+  },
+
+  quartets: {
+    rankLabel: "Valor",
+    firstCardLabel: "Primeira carta",
+    rankNames: {
+      A: "Ases",
+      "2": "Dois",
+      "3": "Três",
+      "4": "Quatros",
+      "5": "Cincos",
+      "6": "Seis",
+      "7": "Setes",
+      "8": "Oitos",
+      "9": "Noves",
+      "10": "Dezes",
+      J: "Valetes",
+      Q: "Damas",
+      K: "Reis",
+    } satisfies Record<Rank, string>,
+    distancesLine: (values: readonly number[]) => values.join(" · "),
+    positionsLine: (values: readonly number[]) => values.join(", "),
+    answerDescription: (
+      rank: string,
+      firstCard: string,
+      distances: string,
+      positions: string,
+    ) =>
+      `${rank}: primeira carta ${firstCard}; distâncias ${distances}; posições ${positions}.`,
   },
 
   directions: {

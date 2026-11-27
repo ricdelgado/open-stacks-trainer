@@ -252,6 +252,17 @@ export function startApp(appRoot: HTMLElement): void {
     accelerateCandidates: string[];
   } => {
     const modeStats = state.stats[stackId]?.[mode];
+    if (mode === "quartets") {
+      return {
+        reinforcementCandidates: state.settings.reinforcement
+          ? Object.entries(modeStats?.ranks ?? {})
+              .filter(([, rank]) => rank.inReinforcement)
+              .map(([rank]) => rank)
+          : [],
+        accelerateCandidates: [],
+      };
+    }
+
     return {
       reinforcementCandidates: state.settings.reinforcement
         ? Object.entries(modeStats?.cards ?? {})
@@ -533,6 +544,9 @@ export function startApp(appRoot: HTMLElement): void {
           card: item.card,
           position: item.position,
           direction: item.direction,
+          rank: item.rank,
+          firstCard: item.firstCard,
+          distances: item.distances,
           correct,
           at,
           elapsedTenths: timedTenths,
@@ -587,6 +601,7 @@ export function startApp(appRoot: HTMLElement): void {
         return {
           stackId: generated.stackId,
           stackName: generated.stackName,
+          mode: generated.mode,
           direction: generated.direction,
           answered: progress.answered,
           correct: progress.correct,

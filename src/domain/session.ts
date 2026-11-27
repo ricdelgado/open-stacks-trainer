@@ -1,6 +1,7 @@
 import { planAccelerateInserts } from "./accelerate";
-import { isCardCode } from "./cards";
+import { RANKS, isCardCode, type Rank } from "./cards";
 import type { InsertPlan } from "./inserts";
+import { computeQuartets, type Quartet, type QuartetDistances } from "./quartets";
 import { planReinforcementInserts } from "./reinforcement";
 import type { Direction, Mode } from "./types";
 
@@ -11,8 +12,12 @@ export type InsertKind = "reinforcement" | "accelerate";
 export interface SessionItem {
   position: number;
   card: string;
-  direction: ItemDirection;
+  direction?: ItemDirection;
   nextCards?: readonly string[];
+  rank?: Rank;
+  firstCard?: string;
+  distances?: QuartetDistances;
+  positions?: readonly [number, number, number, number];
   insert?: InsertKind;
 }
 
@@ -119,6 +124,92 @@ function mixedDirections(random: Rng): ItemDirection[] {
     ],
     random,
   );
+}
+
+function buildQuartetItem(quartet: Quartet, insert?: InsertKind): SessionItem {
+  const item: SessionItem = {
+    position: quartet.positions[0],
+    card: quartet.firstCard,
+    rank: quartet.rank,
+    firstCard: quartet.firstCard,
+    distances: quartet.distances,
+    positions: quartet.positions,
+  };
+  if (insert) item.insert = insert;
+  return item;
+}
+
+function quartetsByRank(order: readonly string[]): Map<Rank, Quartet> {
+  return new Map(computeQuartets(order).map((quartet) => [quartet.rank, quartet]));
+}
+
+function shuffleRanks(random: Rng): Rank[] {
+  return shuffle([...RANKS], random);
+}
+
+function buildQuartetPass(order: readonly string[], random: Rng): SessionItem[] {
+  const quartets = quartetsByRank(order);
+  return shuffleRanks(random).map((rank) => {
+    const quartet = quartets.get(rank);
+    if (!quartet) throw new Error(`Missing quartet for rank ${rank}.`);
+    return buildQuartetItem(quartet);
+  });
+}
+
+function applyQuartetInserts(
+  regularItems: readonly SessionItem[],
+  quartets: Map<Rank, Quartet>,
+  reinforcementCandidates: readonly string[],
+  random: Rng,
+): SessionItem[] {
+  const knownRanks = new Set<string>(RANKS);
+  const pool = [...new Set(reinforcementCandidates)].filter((rank) =>
+    knownRanks.has(rank),
+  );
+  const plans = planReinforcementInserts({
+    candidates: pool,
+    regularCount: regularItems.length,
+    random,
+  });
+
+  const items: SessionItem[] = [];
+  let cursor = 0;
+
+  for (let index = 0; index < regularItems.length; index += 1) {
+    const regularItem = regularItems[index];
+    if (!regularItem) {
+      throw new Error(`Missing regular quartet item ${index}.`);
+    }
+    items.push(regularItem);
+
+    const regularsSeen = index + 1;
+    const nextRank = regularItems[index + 1]?.rank;
+    while (
+      cursor < plans.length &&
+      plans[cursor]?.afterRegular === regularsSeen
+    ) {
+      const insert = plans[cursor];
+      if (!insert) break;
+
+      let rank = insert.card as Rank;
+      if (pool.length > 1) {
+        const previousRank = items.at(-1)?.rank;
+        const avoid = new Set<string>();
+        if (previousRank) avoid.add(previousRank);
+        if (nextRank) avoid.add(nextRank);
+        rank = chooseAdjacentSafeCard(rank, pool, avoid) as Rank;
+      }
+
+      const quartet = quartets.get(rank);
+      if (!quartet) {
+        throw new Error(`Missing quartet for inserted rank ${rank}.`);
+      }
+      items.push(buildQuartetItem(quartet, "reinforcement"));
+      cursor += 1;
+    }
+  }
+
+  return items;
 }
 
 function buildRegularItems(
@@ -288,6 +379,22 @@ export function generateSession({
 }: GenerateSessionOptions): GeneratedSession {
   assertValidOrder(order);
 
+  if (mode === "quartets") {
+    const regularItems = buildQuartetPass(order, random);
+    return {
+      stackId,
+      stackName,
+      direction,
+      mode,
+      items: applyQuartetInserts(
+        regularItems,
+        quartetsByRank(order),
+        reinforcementCandidates,
+        random,
+      ),
+    };
+  }
+
   const positions = Array.from({ length: 52 }, (_, index) => index + 1);
   const regularItems = buildRegularItems(
     order,
@@ -322,6 +429,37 @@ export function generateEndlessBatch({
   random = Math.random,
 }: GenerateEndlessBatchOptions): GeneratedSession {
   assertValidOrder(order);
+
+  if (mode === "quartets") {
+    const firstPass = buildQuartetPass(order, random);
+    const secondPass = buildQuartetPass(order, random);
+
+    if (firstPass.at(-1)?.rank === secondPass[0]?.rank) {
+      swapFirstTwo(secondPass);
+    }
+
+    const regularItems = [...firstPass, ...secondPass];
+
+    if (
+      previousFrontCard !== null &&
+      regularItems[0]?.rank === previousFrontCard
+    ) {
+      swapFirstTwo(regularItems);
+    }
+
+    return {
+      stackId,
+      stackName,
+      direction,
+      mode,
+      items: applyQuartetInserts(
+        regularItems,
+        quartetsByRank(order),
+        reinforcementCandidates,
+        random,
+      ),
+    };
+  }
 
   const positions = Array.from({ length: 52 }, (_, index) => index + 1);
   const firstPass = buildRegularItems(

@@ -15,7 +15,7 @@ import type {
 
 export const BACKUP_FORMAT = "open-stacks-trainer-backup";
 export const BACKUP_FORMAT_VERSION = 1;
-export const SUPPORTED_SCHEMA_VERSION = 2;
+export const SUPPORTED_SCHEMA_VERSION = 3;
 
 export interface BackupFile {
   format: typeof BACKUP_FORMAT;
@@ -47,13 +47,27 @@ function copyModeStats(stats: ModeStats): ModeStats {
   return {
     ...stats,
     practiceDays: stats.practiceDays.map((day) => ({ ...day })),
-    recentMisses: stats.recentMisses.map((miss) => ({ ...miss })),
+    recentMisses: stats.recentMisses.map((miss) =>
+      "distances" in miss
+        ? { ...miss, distances: [...miss.distances] as typeof miss.distances }
+        : { ...miss },
+    ),
     cards: Object.fromEntries(
       Object.entries(stats.cards).map(([card, value]) => [
         card,
         copyCardStats(value),
       ]),
     ),
+    ...(stats.ranks
+      ? {
+          ranks: Object.fromEntries(
+            Object.entries(stats.ranks).map(([rank, value]) => [
+              rank,
+              copyCardStats(value),
+            ]),
+          ),
+        }
+      : {}),
   };
 }
 

@@ -40,9 +40,9 @@ describe("app storage", () => {
     expect(result.state).toEqual(createDefaultState());
   });
 
-  it("uses schema v2 defaults for new settings", () => {
+  it("uses schema v3 defaults for new settings", () => {
     const state = createDefaultState();
-    expect(state.schemaVersion).toBe(2);
+    expect(state.schemaVersion).toBe(3);
     expect(state.settings).toMatchObject({
       mode: "basic",
       reinforcement: false,
@@ -82,7 +82,7 @@ describe("app storage", () => {
 
   it("refuses to overwrite a newer schema", () => {
     const storage = new MemoryStorage();
-    const raw = JSON.stringify({ ...createDefaultState(), schemaVersion: 3 });
+    const raw = JSON.stringify({ ...createDefaultState(), schemaVersion: 4 });
     storage.values.set(STORAGE_KEY, raw);
     const store = new AppStore(storage);
 
@@ -158,7 +158,7 @@ describe("app storage", () => {
     expect(new AppStore(storage).load().ok).toBe(true);
   });
 
-  it("migrates a v1 payload and writes v2 back to storage", () => {
+  it("migrates a v1 payload and writes v3 back to storage", () => {
     const storage = new MemoryStorage();
     const v1 = {
       schemaVersion: 1,
@@ -182,7 +182,7 @@ describe("app storage", () => {
     const result = new AppStore(storage).load();
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.schemaVersion).toBe(2);
+    expect(result.state.schemaVersion).toBe(3);
     expect(result.state.settings.selectedStackId).toBe("aronson");
     expect(result.state.settings.mode).toBe("basic");
     expect(result.state.stats.mnemonica?.basic?.totalAnswered).toBe(12);
@@ -191,7 +191,7 @@ describe("app storage", () => {
     const written = JSON.parse(storage.values.get(STORAGE_KEY) ?? "{}") as {
       schemaVersion?: number;
     };
-    expect(written.schemaVersion).toBe(2);
+    expect(written.schemaVersion).toBe(3);
   });
 
   it("degrades when storage is unavailable", () => {

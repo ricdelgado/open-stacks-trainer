@@ -106,7 +106,9 @@ function backupErrorMessage(error: BackupError): string {
 }
 
 function modeLabel(mode: Mode): string {
-  return mode === "basic" ? strings.menu.modeBasic : strings.menu.modeCardPlus3;
+  if (mode === "basic") return strings.menu.modeBasic;
+  if (mode === "card-plus-3") return strings.menu.modeCardPlus3;
+  return strings.menu.modeQuartets;
 }
 
 function stackOrderFor(state: AppState, stackId: string): readonly string[] {
@@ -315,17 +317,34 @@ function renderMisses(modeStats: ModeStats): HTMLElement {
   for (const miss of sortedMisses) {
     const item = el("li", "stats-miss");
     const details = el("div", "stats-miss__details");
-    details.append(
-      el("span", "stats-miss__direction", strings.directions[miss.direction]),
-      el(
-        "span",
-        "stats-miss__meta",
-        strings.statsPage.missMeta(miss.position, formatTimestamp(miss.at)),
-      ),
-    );
     const marker = icon("cross");
     marker.classList.add("miss-marker");
-    item.append(marker, createCardFace(miss.card, "small"), details);
+
+    if ("rank" in miss) {
+      details.append(
+        el(
+          "span",
+          "stats-miss__direction",
+          strings.quartets.rankNames[miss.rank],
+        ),
+        el(
+          "span",
+          "stats-miss__meta",
+          strings.quartets.distancesLine(miss.distances),
+        ),
+      );
+      item.append(marker, createCardFace(miss.firstCard, "small"), details);
+    } else {
+      details.append(
+        el("span", "stats-miss__direction", strings.directions[miss.direction]),
+        el(
+          "span",
+          "stats-miss__meta",
+          strings.statsPage.missMeta(miss.position, formatTimestamp(miss.at)),
+        ),
+      );
+      item.append(marker, createCardFace(miss.card, "small"), details);
+    }
     misses.append(item);
   }
   return misses;

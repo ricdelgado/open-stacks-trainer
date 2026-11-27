@@ -6,7 +6,7 @@ import {
 import type { AppState } from "../domain/types";
 
 export const STORAGE_KEY = "open-stacks-trainer";
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const DEFAULT_STACK_ID = "mnemonica";
 
 export interface StorageLike {
@@ -34,7 +34,7 @@ export function createDefaultState(
   selectedStackId: string = DEFAULT_STACK_ID,
 ): AppState {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     settings: {
       selectedStackId,
       direction: "mixed",

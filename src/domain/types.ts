@@ -1,3 +1,6 @@
+import { RANKS, type Rank } from "./cards";
+import type { QuartetDistances } from "./quartets";
+
 export const DIRECTIONS = [
   "position-to-card",
   "card-to-position",
@@ -6,7 +9,7 @@ export const DIRECTIONS = [
 
 export type Direction = (typeof DIRECTIONS)[number];
 
-export const MODES = ["basic", "card-plus-3"] as const;
+export const MODES = ["basic", "card-plus-3", "quartets"] as const;
 
 export type Mode = (typeof MODES)[number];
 
@@ -53,12 +56,21 @@ export interface PracticeDay {
   correct: number;
 }
 
-export interface MissRecord {
+export interface CardMissRecord {
   card: string;
   position: number;
   direction: Exclude<Direction, "mixed">;
   at: string;
 }
+
+export interface QuartetMissRecord {
+  rank: Rank;
+  firstCard: string;
+  distances: QuartetDistances;
+  at: string;
+}
+
+export type MissRecord = CardMissRecord | QuartetMissRecord;
 
 export interface CardStats {
   currentStreak: number;
@@ -67,6 +79,8 @@ export interface CardStats {
   correctTimedAnswers: number;
   inReinforcement: boolean;
 }
+
+export type RankStats = CardStats;
 
 export interface ModeStats {
   stackId: string;
@@ -79,12 +93,13 @@ export interface ModeStats {
   practiceDays: PracticeDay[];
   recentMisses: MissRecord[];
   cards: Record<string, CardStats>;
+  ranks?: Partial<Record<Rank, RankStats>>;
 }
 
 export type StackModes = Partial<Record<Mode, ModeStats>>;
 
 export interface AppState {
-  schemaVersion: 2;
+  schemaVersion: 3;
   settings: Settings;
   customStacks: CustomStack[];
   stats: Record<string, StackModes>;
@@ -102,4 +117,8 @@ export function isAppearance(value: unknown): value is Appearance {
   return (
     typeof value === "string" && APPEARANCES.includes(value as Appearance)
   );
+}
+
+export function isRank(value: unknown): value is Rank {
+  return typeof value === "string" && RANKS.includes(value as Rank);
 }

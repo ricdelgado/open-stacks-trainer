@@ -38,7 +38,7 @@ function migrateFromV1(value: Record<string, unknown>): MigrationResult {
   }
 
   const state = parseAppState({
-    schemaVersion: 2,
+    schemaVersion: 3,
     settings: {
       selectedStackId: rawSettings.selectedStackId,
       direction: rawSettings.direction,
@@ -58,10 +58,14 @@ export function migrateState(value: unknown): MigrationResult {
   if (typeof version !== "number" || !Number.isInteger(version)) {
     return invalid();
   }
-  if (version > 2) return { ok: false, reason: "newer-schema" };
-  if (version === 2) {
+  if (version > 3) return { ok: false, reason: "newer-schema" };
+  if (version === 3) {
     const state = parseAppState(value);
     return state ? { ok: true, state, migrated: false } : invalid();
+  }
+  if (version === 2) {
+    const state = parseAppState({ ...value, schemaVersion: 3 });
+    return state ? { ok: true, state, migrated: true } : invalid();
   }
   if (version === 1) return migrateFromV1(value);
 

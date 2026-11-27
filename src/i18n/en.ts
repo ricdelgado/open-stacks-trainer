@@ -34,6 +34,7 @@ export const en = {
     modeQuartets: "Quartets",
     modeAcaan: "ACAAN",
     modeCyclic: "Cyclic stacks",
+    quartetsNoDirection: "Quartets use no direction.",
     later: "later",
     stats: "Stats",
     myStacks: "My Stacks",
@@ -85,6 +86,35 @@ export const en = {
     gotIt: "Got it",
     trainAgain: "Train again",
     menu: "Menu",
+  },
+
+  quartets: {
+    rankLabel: "Rank",
+    firstCardLabel: "First card",
+    rankNames: {
+      A: "Aces",
+      "2": "Twos",
+      "3": "Threes",
+      "4": "Fours",
+      "5": "Fives",
+      "6": "Sixes",
+      "7": "Sevens",
+      "8": "Eights",
+      "9": "Nines",
+      "10": "Tens",
+      J: "Jacks",
+      Q: "Queens",
+      K: "Kings",
+    } satisfies Record<Rank, string>,
+    distancesLine: (values: readonly number[]) => values.join(" · "),
+    positionsLine: (values: readonly number[]) => values.join(", "),
+    answerDescription: (
+      rank: string,
+      firstCard: string,
+      distances: string,
+      positions: string,
+    ) =>
+      `${rank}: first card ${firstCard}; distances ${distances}; positions ${positions}.`,
   },
 
   directions: {
